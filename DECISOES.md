@@ -92,3 +92,24 @@ A tela mostra o resultado da consulta de CNPJ, mas ao salvar o servidor consulta
 de novo (sai do cache) em vez de aceitar razão social, porte ou regime enviados
 pelo formulário — que qualquer um poderia forjar. Do navegador vêm só o CNPJ e o
 que a pessoa digita.
+
+## 2026-09-22 — Empresa verificada e CNPJ único só entre as verificadas
+
+Com CNPJ único para todos, quem cadastrasse o CNPJ de outra empresa primeiro
+trancaria o dono de verdade para fora. Agora qualquer conta cadastra qualquer
+CNPJ, sempre como não verificada, e o CNPJ só é único entre as verificadas
+(índice único parcial). Os números de uma empresa não verificada são só os que
+a própria conta digitou, então uma cópia não expõe nada do dono.
+
+A verificação é feita pela equipe — manual no beta, conferindo um documento que
+não seja público (contrato social + documento do sócio; o cartão CNPJ não
+serve). Pelo SQL Editor do Supabase:
+
+    select public.verificar_empresa('<id da empresa>', '<quem verificou>', 'manual');
+
+Um gatilho impede que o usuário do app mexa nos campos de verificação, e a
+função não pode ser chamada pela API. Os métodos `cpf` e `pix` entram depois e
+preenchem as mesmas colunas.
+
+Efeito colateral bom: a mensagem "CNPJ já cadastrado", que revelava quem é
+cliente, deixou de existir.

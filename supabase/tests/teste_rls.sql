@@ -1,5 +1,5 @@
 -- Teste da RLS: um usuário não pode ver nem tocar na empresa do outro.
--- Rode inteiro no SQL Editor do lesstax-dev. As cinco linhas saem juntas no fim.
+-- Rode inteiro no SQL Editor do lesstax-dev. As sete linhas saem juntas no fim.
 -- O próprio script apaga o que criou.
 
 create temp table if not exists resultados (ordem int, resultado text);
@@ -85,16 +85,47 @@ select 5, case when count(*) = 0
                else 'FALHOU  5. leads exposta' end
 from public.leads;
 
+-- 6 e 7. Verificação da empresa. CNPJ de teste: válido, mas não existe na Receita.
+insert into public.empresas (nome, atividade, criado_por, cnpj)
+values ('Original da Ana', 'comercio', '11111111-1111-1111-1111-111111111111', '99999999000191');
+
+set request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+insert into public.empresas (nome, atividade, criado_por, cnpj)
+values ('Cópia do Bruno', 'comercio', '22222222-2222-2222-2222-222222222222', '99999999000191');
+
+-- 7. Bruno tenta se marcar como verificado.
+do $$
+begin
+  begin
+    update public.empresas
+       set verificada_em = now(), verificada_por = 'eu mesmo', verificacao_metodo = 'manual'
+     where nome = 'Cópia do Bruno';
+    insert into resultados values (7, 'FALHOU  7. usuário conseguiu se marcar como verificado');
+  exception when insufficient_privilege then
+    insert into resultados values (7, 'OK      7. usuário não consegue se verificar sozinho');
+  end;
+end;
+$$;
+
+reset role;
+
+-- 6. O mesmo CNPJ pode estar em duas contas enquanto nenhuma for verificada.
+insert into resultados
+select 6, case when count(*) = 2
+               then 'OK      6. mesmo CNPJ em duas contas não verificadas'
+               else 'FALHOU  6. encontrei ' || count(*) || ' cadastros do CNPJ de teste' end
+from public.empresas where cnpj = '99999999000191';
+
 -- ------------------------------------------------------------------ limpeza
 reset role;
 reset request.jwt.claims;
 
-delete from public.meses    where empresa_id in (select id from public.empresas where nome in ('Padaria da Ana','Studio do Bruno'));
-delete from public.membros  where empresa_id in (select id from public.empresas where nome in ('Padaria da Ana','Studio do Bruno'));
-delete from public.empresas where nome in ('Padaria da Ana','Studio do Bruno');
+delete from public.meses    where empresa_id in (select id from public.empresas where nome in ('Padaria da Ana','Studio do Bruno','Original da Ana','Cópia do Bruno'));
+delete from public.membros  where empresa_id in (select id from public.empresas where nome in ('Padaria da Ana','Studio do Bruno','Original da Ana','Cópia do Bruno'));
+delete from public.empresas where nome in ('Padaria da Ana','Studio do Bruno','Original da Ana','Cópia do Bruno');
 delete from public.leads    where nome = 'Lead de teste';
 delete from public.perfis   where id in ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222');
 delete from auth.users      where id in ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222');
 
--- O resultado: as cinco linhas precisam começar com OK.
+-- O resultado: as sete linhas precisam começar com OK.
 select resultado from resultados order by ordem;

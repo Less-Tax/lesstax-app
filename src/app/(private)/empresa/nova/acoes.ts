@@ -66,14 +66,7 @@ export async function salvarEmpresa(_anterior: EstadoEmpresa, dados: FormData): 
   }
 
   const criada = await criarEmpresa(usuario.id, lido.data, receita);
-  if (!criada.ok) {
-    return {
-      erro:
-        criada.motivo === "cnpj_repetido"
-          ? "Esse CNPJ já está cadastrado na Less Tax. Peça para quem cadastrou convidar você."
-          : "Não consegui salvar agora. Tente de novo em instantes.",
-    };
-  }
+  if (!criada.ok) return { erro: "Não consegui salvar agora. Tente de novo em instantes." };
 
   redirect("/inicio");
 }

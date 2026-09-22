@@ -26,8 +26,22 @@ export default async function Inicio() {
         </p>
       </div>
 
+      {empresa.verificada_em ? (
+        <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-600/10 px-3 py-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+          ✓ Empresa verificada
+        </p>
+      ) : (
+        <div className="flex flex-col gap-1 rounded-xl bg-black/[0.03] p-3.5 text-sm dark:bg-white/5">
+          <p className="font-semibold">Empresa ainda não verificada</p>
+          <p className="text-black/60 dark:text-white/60">
+            Você já pode usar o Raio-X normalmente. A verificação confirma que esta conta é da
+            empresa e libera convidar o contador e contratar a assessoria.
+          </p>
+        </div>
+      )}
+
       <p className="text-sm text-black/60 dark:text-white/60">
-        Empresa cadastrada. O Raio-X entra aqui na próxima etapa.
+        O Raio-X entra aqui na próxima etapa.
       </p>
 
       <form action={sair}>
