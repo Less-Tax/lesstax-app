@@ -1,23 +1,33 @@
-import { usuarioAtual } from "@/lib/auth/usuario";
+import { redirect } from "next/navigation";
 import { sair } from "@/lib/auth/acoes";
+import { usuarioAtual } from "@/lib/auth/usuario";
+import { empresasDoUsuario } from "@/lib/db/empresas";
+import { mascaraCnpj } from "@/lib/validacao/cnpj";
 
 export const metadata = { title: "Início — Less Tax" };
 
-/** Tela provisória: existe para provar que o login e o bloqueio funcionam. */
+/** Tela provisória: o Raio-X entra aqui na próxima etapa. */
 export default async function Inicio() {
-  const usuario = await usuarioAtual();
+  const [usuario, empresas] = await Promise.all([usuarioAtual(), empresasDoUsuario()]);
+
+  // Primeiro acesso: sem empresa, não há o que mostrar.
+  if (empresas.length === 0) redirect("/empresa/nova");
+  const empresa = empresas[0];
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center gap-6 px-4 py-10">
       <div>
-        <h1 className="text-2xl font-bold">Você está dentro</h1>
+        <p className="text-sm text-black/60 dark:text-white/60">{usuario?.email}</p>
+        <h1 className="mt-1 text-2xl font-bold">{empresa.nome}</h1>
         <p className="mt-1 text-sm text-black/60 dark:text-white/60">
-          Logado como {usuario?.email}.
+          {[empresa.cnpj ? `CNPJ ${mascaraCnpj(empresa.cnpj)}` : null, empresa.municipio && empresa.uf ? `${empresa.municipio}/${empresa.uf}` : null]
+            .filter(Boolean)
+            .join(" · ")}
         </p>
       </div>
 
       <p className="text-sm text-black/60 dark:text-white/60">
-        Esta tela é provisória. O Raio-X entra aqui na próxima etapa.
+        Empresa cadastrada. O Raio-X entra aqui na próxima etapa.
       </p>
 
       <form action={sair}>

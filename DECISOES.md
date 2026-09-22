@@ -77,3 +77,18 @@ fechar o navegador — o caso de computador emprestado ou compartilhado.
 O prazo é aplicado nos dois lugares que gravam cookie (`lib/db/servidor.ts` e
 `lib/db/sessao.ts`), porque o proxy regrava os cookies a cada renovação e
 desfaria o prazo se soubesse só um deles.
+
+## 2026-09-22 — Empresa é criada sem pedir a linha de volta
+
+`supabase.from("empresas").insert(...).select()` falha com erro de RLS: no
+momento do insert a pessoa ainda não é membro da empresa (o vínculo é criado
+pelo gatilho logo depois), então a política de leitura recusa devolver a linha.
+Por isso o id é gerado no servidor com `crypto.randomUUID()` e o insert não
+usa `.select()`. Testado no Postgres: com `returning` falha, sem ele funciona.
+
+## 2026-09-22 — Dados da Receita nunca vêm do navegador
+
+A tela mostra o resultado da consulta de CNPJ, mas ao salvar o servidor consulta
+de novo (sai do cache) em vez de aceitar razão social, porte ou regime enviados
+pelo formulário — que qualquer um poderia forjar. Do navegador vêm só o CNPJ e o
+que a pessoa digita.
