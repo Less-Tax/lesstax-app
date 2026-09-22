@@ -79,4 +79,28 @@ responde em `/raio-x`.
 5. `simulacoes` não é recalculada: regra nova gera simulação nova.
 6. Segredo só em variável de ambiente. `SUPABASE_SERVICE_ROLE_KEY` nunca no cliente.
 
+## Commits
+
+Padrão [Conventional Commits](https://www.conventionalcommits.org), com a
+descrição em português e no imperativo:
+
+| Prefixo | Quando usar |
+|---|---|
+| `feat:` | função nova |
+| `fix:` | correção de bug |
+| `refactor:` | mudança sem alterar comportamento |
+| `docs:` | documentação |
+| `chore:` | build, dependências, configuração |
+| `test:` | testes |
+
+A primeira linha para em 72 caracteres — é o que o GitHub mostra sem cortar.
+O detalhe vai no corpo do commit, depois de uma linha em branco.
+
+```
+feat: autenticação com Supabase e telas de conta
+
+Login, cadastro e recuperação de senha. A sessão é verificada no layout
+de (private), em um lugar só.
+```
+
 As decisões técnicas e o porquê de cada uma estão em [DECISOES.md](./DECISOES.md).

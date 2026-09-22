@@ -59,3 +59,10 @@ O protótipo em HTML continua no ar para captação até o beta fechado terminar
 recebe só correção de bug. Do MVP migram o cálculo (reescrito em TS com testes),
 a função de CNPJ, as instruções do Lessy e as cores. O `index.html` fica como
 referência visual, não como código a portar.
+
+## 2026-09-22 — Conventional Commits
+
+O histórico usa `feat:`, `fix:`, `refactor:`, `docs:`, `chore:` e `test:`, com a
+descrição em português e no imperativo, primeira linha até 72 caracteres.
+Além de deixar o histórico legível, o prefixo permite gerar changelog e versão
+automaticamente quando o projeto precisar disso.
