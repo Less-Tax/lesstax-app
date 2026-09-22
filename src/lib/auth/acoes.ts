@@ -1,7 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { criarClienteServidor } from "@/lib/db/servidor";
+import { COOKIE_LEMBRAR, SEGUNDOS_LEMBRAR } from "@/lib/auth/lembrar";
 import {
   esquemaCadastrar,
   esquemaEntrar,
@@ -34,6 +36,18 @@ export async function entrar(_anterior: EstadoForm, dados: FormData): Promise<Es
     senha: dados.get("senha"),
   });
   if (!lido.success) return { erro: lido.error.issues[0].message };
+
+  // Grava a preferência ANTES do login: é ela que define o prazo dos
+  // cookies que o signIn vai gravar em seguida.
+  const lembrar = dados.get("lembrar") !== null;
+  const bolachas = await cookies();
+  bolachas.set(COOKIE_LEMBRAR, lembrar ? "1" : "0", {
+    maxAge: lembrar ? SEGUNDOS_LEMBRAR : undefined,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+  });
 
   const supabase = await criarClienteServidor();
   const { error } = await supabase.auth.signInWithPassword({
@@ -105,5 +119,9 @@ export async function definirSenha(_anterior: EstadoForm, dados: FormData): Prom
 export async function sair() {
   const supabase = await criarClienteServidor();
   await supabase.auth.signOut();
+
+  const bolachas = await cookies();
+  bolachas.delete(COOKIE_LEMBRAR);
+
   redirect("/entrar");
 }

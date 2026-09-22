@@ -2,10 +2,13 @@ import Link from "next/link";
 import { cadastrar } from "@/lib/auth/acoes";
 import { Campo } from "@/components/campo";
 import { FormAuth } from "@/components/form-auth";
+import { mandarParaInicioSeLogado } from "@/lib/auth/usuario";
 
 export const metadata = { title: "Criar conta — Less Tax" };
 
-export default function Cadastrar() {
+export default async function Cadastrar() {
+  await mandarParaInicioSeLogado();
+
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center gap-6 px-4 py-10">
       <div>

@@ -66,3 +66,14 @@ O histórico usa `feat:`, `fix:`, `refactor:`, `docs:`, `chore:` e `test:`, com 
 descrição em português e no imperativo, primeira linha até 72 caracteres.
 Além de deixar o histórico legível, o prefixo permite gerar changelog e versão
 automaticamente quando o projeto precisar disso.
+
+## 2026-09-22 — "Manter conectado" por 30 dias, com opção de desligar
+
+Os cookies de sessão nasciam sem prazo, então morriam ao fechar o navegador.
+Agora o prazo é decidido por um cookie próprio (`lt_lembrar`): padrão de 30
+dias, e quem desmarcar a caixa no login recebe cookie de sessão, que some ao
+fechar o navegador — o caso de computador emprestado ou compartilhado.
+
+O prazo é aplicado nos dois lugares que gravam cookie (`lib/db/servidor.ts` e
+`lib/db/sessao.ts`), porque o proxy regrava os cookies a cada renovação e
+desfaria o prazo se soubesse só um deles.

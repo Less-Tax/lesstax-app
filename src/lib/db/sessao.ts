@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { COOKIE_LEMBRAR, comPrazo, querLembrar } from "@/lib/auth/lembrar";
 
 /**
  * Renova o token a cada requisição e devolve os cookies atualizados.
@@ -17,12 +18,13 @@ export async function renovarSessao(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(lista) {
+          const lembrar = querLembrar(request.cookies.get(COOKIE_LEMBRAR)?.value);
           for (const { name, value } of lista) {
             request.cookies.set(name, value);
           }
           resposta = NextResponse.next({ request });
           for (const { name, value, options } of lista) {
-            resposta.cookies.set(name, value, options);
+            resposta.cookies.set(name, value, comPrazo(options, lembrar));
           }
         },
       },

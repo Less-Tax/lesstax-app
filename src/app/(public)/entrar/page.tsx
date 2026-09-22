@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { entrar } from "@/lib/auth/acoes";
+import { Caixa } from "@/components/caixa";
 import { Campo } from "@/components/campo";
 import { FormAuth } from "@/components/form-auth";
+import { mandarParaInicioSeLogado } from "@/lib/auth/usuario";
 
 export const metadata = { title: "Entrar — Less Tax" };
 
@@ -10,6 +12,7 @@ export default async function Entrar({
 }: {
   searchParams: Promise<{ erro?: string }>;
 }) {
+  await mandarParaInicioSeLogado();
   const { erro } = await searchParams;
 
   return (
@@ -30,6 +33,7 @@ export default async function Entrar({
       <FormAuth acao={entrar} botao="Entrar">
         <Campo id="email" rotulo="E-mail" tipo="email" autoComplete="email" />
         <Campo id="senha" rotulo="Senha" tipo="password" autoComplete="current-password" />
+        <Caixa id="lembrar" rotulo="Manter conectado" marcadoPorPadrao />
       </FormAuth>
 
       <div className="flex flex-col gap-2 text-sm">

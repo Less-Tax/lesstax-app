@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { mandarParaInicioSeLogado } from "@/lib/auth/usuario";
 
-export default function Inicial() {
+export default async function Inicial() {
+  await mandarParaInicioSeLogado();
+
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center gap-6 px-4 py-10">
       <div>
