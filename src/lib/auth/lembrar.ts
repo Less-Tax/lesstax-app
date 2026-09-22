@@ -19,6 +19,10 @@ export function comPrazo<T extends { maxAge?: number; expires?: Date }>(
   lembrar: boolean,
 ): T {
   if (lembrar) return { ...opcoes, maxAge: SEGUNDOS_LEMBRAR };
-  const { maxAge: _ignorado, expires: _tambem, ...resto } = opcoes;
-  return resto as T;
+
+  // Sem prazo: o cookie vira de sessão e some quando o navegador fecha.
+  const resto = { ...opcoes };
+  delete resto.maxAge;
+  delete resto.expires;
+  return resto;
 }

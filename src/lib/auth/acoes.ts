@@ -26,7 +26,11 @@ function traduzir(mensagem: string) {
   if (/invalid login credentials/i.test(mensagem)) return "E-mail ou senha incorretos.";
   if (/email not confirmed/i.test(mensagem)) return "Confirme seu e-mail antes de entrar. Veja a caixa de entrada.";
   if (/user already registered/i.test(mensagem)) return "Já existe uma conta com esse e-mail.";
-  if (/rate limit|too many/i.test(mensagem)) return "Muitas tentativas. Espere um minuto e tente de novo.";
+  if (/rate limit|too many|email rate/i.test(mensagem)) {
+    // O serviço de e-mail embutido do Supabase envia só 2 mensagens por hora.
+    // Em produção, com SMTP próprio, o limite é outro.
+    return "O envio de e-mails atingiu o limite por enquanto. Tente de novo em alguns minutos.";
+  }
   return "Não consegui concluir agora. Tente de novo em instantes.";
 }
 
@@ -64,6 +68,7 @@ export async function cadastrar(_anterior: EstadoForm, dados: FormData): Promise
     nome: dados.get("nome"),
     email: dados.get("email"),
     senha: dados.get("senha"),
+    confirmacao: dados.get("confirmacao"),
   });
   if (!lido.success) return { erro: lido.error.issues[0].message };
 

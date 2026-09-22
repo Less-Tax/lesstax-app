@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cadastrar } from "@/lib/auth/acoes";
 import { Campo } from "@/components/campo";
+import { CamposSenha } from "@/components/campos-senha";
 import { FormAuth } from "@/components/form-auth";
 import { mandarParaInicioSeLogado } from "@/lib/auth/usuario";
 
@@ -21,13 +22,7 @@ export default async function Cadastrar() {
       <FormAuth acao={cadastrar} botao="Criar conta">
         <Campo id="nome" rotulo="Seu nome" autoComplete="name" />
         <Campo id="email" rotulo="E-mail" tipo="email" autoComplete="email" />
-        <Campo
-          id="senha"
-          rotulo="Senha"
-          tipo="password"
-          autoComplete="new-password"
-          dica="Pelo menos 8 caracteres."
-        />
+        <CamposSenha />
       </FormAuth>
 
       <p className="text-sm text-black/60 dark:text-white/60">

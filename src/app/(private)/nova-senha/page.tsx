@@ -1,5 +1,5 @@
 import { definirSenha } from "@/lib/auth/acoes";
-import { Campo } from "@/components/campo";
+import { CamposSenha } from "@/components/campos-senha";
 import { FormAuth } from "@/components/form-auth";
 
 export const metadata = { title: "Nova senha — Less Tax" };
@@ -19,19 +19,7 @@ export default function NovaSenha() {
       </div>
 
       <FormAuth acao={definirSenha} botao="Salvar senha">
-        <Campo
-          id="senha"
-          rotulo="Nova senha"
-          tipo="password"
-          autoComplete="new-password"
-          dica="Pelo menos 8 caracteres."
-        />
-        <Campo
-          id="confirmacao"
-          rotulo="Repita a senha"
-          tipo="password"
-          autoComplete="new-password"
-        />
+        <CamposSenha rotulo="Nova senha" />
       </FormAuth>
     </main>
   );
