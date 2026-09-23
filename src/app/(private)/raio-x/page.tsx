@@ -2,11 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CalendarPlus } from "lucide-react";
 import { SeletorMes } from "@/components/navegacao/seletor-mes";
-import { BarraRaioX } from "@/components/raiox/barra";
 import { Cartao } from "@/components/raiox/cartao";
 import { Numero, Principal } from "@/components/raiox/destaques";
 import { Evolucao, type PontoEvolucao } from "@/components/raiox/evolucao";
-import { chave, lerChave } from "@/lib/competencia";
+import { RoscaRaioX } from "@/components/raiox/rosca";
+import { chave, lerChave, mesAtual } from "@/lib/competencia";
 import { empresasDoUsuario } from "@/lib/db/empresas";
 import { simulacoesPorMes } from "@/lib/db/simulacoes";
 import { competencia, nomeDoMes, porcento } from "@/lib/formato";
@@ -70,7 +70,13 @@ export default async function RaioX({ searchParams }: { searchParams: Promise<{ 
         </div>
         <SeletorMes
           rotulo={competencia(entrada.ano, entrada.mes)}
-          detalhe={`${i + 1} de ${simulacoes.length} ${simulacoes.length === 1 ? "mês lançado" : "meses lançados"}`}
+          calendario={{
+            atual: entrada,
+            lancados: simulacoes.map((s) => chave(s.entrada)),
+            limite: mesAtual(),
+            base: "/raio-x",
+            somenteLancados: true,
+          }}
           anterior={
             anterior
               ? { href: `/raio-x?mes=${chave(anterior.entrada)}`, rotulo: competencia(anterior.entrada.ano, anterior.entrada.mes) }
@@ -144,9 +150,8 @@ export default async function RaioX({ searchParams }: { searchParams: Promise<{ 
 
         {/* Coluna lateral: para onde vai o dinheiro e o que olhar */}
         <div className="flex flex-col gap-4">
-          <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
-            <h2 className="font-display text-lg font-bold">De cada R$ 100 que entram</h2>
-            <BarraRaioX entrada={entrada} resultado={resultado} />
+          <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+            <RoscaRaioX key={chave(entrada)} entrada={entrada} resultado={resultado} nomeMes={nomeMes} />
           </section>
 
           {cartoes.length > 0 ? (

@@ -5,3 +5,4 @@ export const reais = (valor: number) =>
 
 export const porcento = (fracao: number) =>
   (fracao * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + "%";
+

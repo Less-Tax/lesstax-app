@@ -19,7 +19,7 @@ export default async function LayoutPrivado({
 
   return (
     <>
-      <header className="border-b border-border bg-card">
+      <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
         <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4">
           <Link href="/raio-x" className="font-display text-xl text-primary">
             less<b>tax</b>

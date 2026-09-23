@@ -198,3 +198,4 @@ const ANEXO_TEXTO = {
 export function rotuloRegime(r: Resultado) {
   return r.acimaDoTeto ? "Faturamento acima do limite do Simples" : `Simples Nacional, ${ANEXO_TEXTO[r.anexo]}`;
 }
+

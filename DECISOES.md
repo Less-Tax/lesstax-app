@@ -160,3 +160,29 @@ celular ficam presas embaixo; no computador sobem para o cabeçalho.
 As cores do gráfico são vizinhas das da marca, ajustadas no validador de
 paletas: as originais falhavam em saturação (daltonismo) e em contraste com o
 fundo branco. Ficam em `--grafico-imposto` e `--grafico-lucro`.
+
+## 2026-09-22 — Rosca no lugar da barra, com lente de R$ 100 ou R$ 1.000
+
+"De cada R$ 100" virou uma rosca com o imposto no centro. A lente padrão vem do
+porte: Microempresa (até R$ 360 mil por ano, art. 3º da LC 123) vê de cada
+R$ 100; acima disso, de cada R$ 1.000 — onde as fatias pequenas deixam de
+virar zero. A pessoa troca entre R$ 100, R$ 1.000 e o valor real do mês.
+
+As partes são repartidas pelo método do maior resto, para somar a base exata
+(sem isso, "de cada R$ 1.000" dava R$ 999).
+
+Com prejuízo, as partes passam de 100% do que entrou e não cabem numa rosca de
+"cada R$ 100": a rosca passa a mostrar para onde foram as saídas, em reais, com
+o prejuízo no centro.
+
+Cores da rosca validadas para daltonismo e contraste: o cinza do custo e o azul
+da folha falhavam; o custo virou violeta (`--grafico-custo`) e a folha, um azul
+mais forte (`--grafico-folha`).
+
+## 2026-09-22 — A rosca fica só em reais do mês
+
+A lente de R$ 100/R$ 1.000 pelo porte foi retirada no mesmo dia: o valor real do
+mês ("dos R$ 100.000 de agosto") é o que o empresário entende de primeira, e a
+porcentagem já aparece ao lado de cada parte. A caixinha que aparecia ao passar
+o mouse tapava o número do meio; agora passar o mouse numa fatia ou na legenda
+troca o próprio número do meio.

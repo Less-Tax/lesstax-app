@@ -64,7 +64,7 @@ export default async function Meses({
         <section className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-4 sm:p-5">
           <SeletorMes
             rotulo={rotuloCompetencia(atual.ano, atual.mes)}
-            detalhe={salvo ? "Já lançado — você pode corrigir" : "Ainda não lançado"}
+            calendario={{ atual, lancados: meses.map(chave), limite, base: "/meses" }}
             anterior={{ href: `/meses?mes=${chave(anterior)}`, rotulo: rotuloCompetencia(anterior.ano, anterior.mes) }}
             proximo={
               comparar(proximo, limite) <= 0

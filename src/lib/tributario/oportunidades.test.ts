@@ -99,3 +99,4 @@ describe("outros cartões", () => {
     expect(ids(contexto(studio, { regime: "lucro_real" }))[0]).toBe("regime");
   });
 });
+

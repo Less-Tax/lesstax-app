@@ -27,6 +27,8 @@
 
   /* Gráficos: vizinhos das cores da marca, validados para daltonismo e contraste */
   --grafico-imposto: #b87d08;
+  --grafico-folha: #2e6fcf;
+  --grafico-custo: #a0529d;
   --grafico-lucro: #12805a;
 }
 
@@ -51,6 +53,8 @@
     --lucro: #4fc497;
 
     --grafico-imposto: #bd8820;
+    --grafico-folha: #4d86d6;
+    --grafico-custo: #b05fac;
     --grafico-lucro: #38ab80;
   }
 }
@@ -75,6 +79,8 @@
   --color-lucro: var(--lucro);
   --color-grafico-imposto: var(--grafico-imposto);
   --color-grafico-lucro: var(--grafico-lucro);
+  --color-grafico-folha: var(--grafico-folha);
+  --color-grafico-custo: var(--grafico-custo);
 
   --font-sans: var(--font-corpo);
   --font-display: var(--font-titulo);

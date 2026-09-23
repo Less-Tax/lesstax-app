@@ -35,19 +35,19 @@ export function FormMes({
       <input type="hidden" name="ano" value={competencia.ano} />
       <input type="hidden" name="mes" value={competencia.mes} />
 
-      <CampoDinheiro id="faturamento" rotulo="Quanto entrou no mês" placeholder="60.000" obrigatorio valorInicial={valores?.faturamento} />
+      <CampoDinheiro id="faturamento" rotulo="Quanto entrou no mês" obrigatorio valorInicial={valores?.faturamento} />
       <div className="grid gap-5 sm:grid-cols-2">
         <CampoDinheiro
           id="folha"
           rotulo="Salários e pró-labore"
-          placeholder="12.000"
+         
           dica="Inclua o pró-labore dos sócios."
           valorInicial={valores?.folha}
         />
         <CampoDinheiro
           id="custos"
           rotulo="Custo total"
-          placeholder="20.000"
+         
           dica="Aluguel, fornecedores, mercadorias, contas."
           valorInicial={valores?.custos}
         />
