@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { criarClienteServidor } from "@/lib/db/servidor";
+import { destinoSeguro } from "@/lib/seguranca/destino";
 
 /**
  * Destino dos links de e-mail (confirmação de conta e recuperação de senha).
@@ -8,7 +9,7 @@ import { criarClienteServidor } from "@/lib/db/servidor";
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
-  const destino = searchParams.get("next") ?? "/inicio";
+  const destino = destinoSeguro(searchParams.get("next"));
   const supabase = await criarClienteServidor();
 
   const code = searchParams.get("code");
