@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
+/*
+ * Tokens da marca, vindos do protótipo em HTML (Projeto SW/MVP/index.html).
+ * Os nomes seguem o padrão do shadcn/ui (background, foreground, primary...),
+ * para os componentes dele encaixarem direto quando forem instalados.
+ * As quatro cores do Raio-X (imposto, folha, custo, lucro) são só nossas.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #eef3f0;
+  --foreground: #10231c;
+  --card: #ffffff;
+  --card-muted: #f6f9f7;
+  --muted-foreground: #56665f;
+  --border: #d6e0db;
+  --primary: #1f7a5a;
+  --primary-soft: #dcefe6;
+  --primary-foreground: #ffffff;
+  --destructive: #b3261e;
+  --ring: #1f7a5a;
+
+  --imposto: #c98a0c;
+  --imposto-soft: #fbefd2;
+  --folha: #4d6b8a;
+  --custo: #8fa29a;
+  --lucro: #1f7a5a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0d1714;
+    --foreground: #e7efeb;
+    --card: #15231e;
+    --card-muted: #1b2c26;
+    --muted-foreground: #9db0a8;
+    --border: #2a3d36;
+    --primary: #4fc497;
+    --primary-soft: #173a2e;
+    --primary-foreground: #0d1714;
+    --destructive: #ff8a80;
+    --ring: #4fc497;
+
+    --imposto: #f0b53a;
+    --imposto-soft: #3a2e12;
+    --folha: #7fa3c8;
+    --custo: #6f827a;
+    --lucro: #4fc497;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-card: var(--card);
+  --color-card-muted: var(--card-muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-destructive: var(--destructive);
+  --color-ring: var(--ring);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-imposto: var(--imposto);
+  --color-imposto-soft: var(--imposto-soft);
+  --color-folha: var(--folha);
+  --color-custo: var(--custo);
+  --color-lucro: var(--lucro);
+
+  --font-sans: var(--font-corpo);
+  --font-display: var(--font-titulo);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
 }

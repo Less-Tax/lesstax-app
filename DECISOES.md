@@ -128,3 +128,17 @@ dados do dono. Entrar numa empresa verificada só por convite.
 Preço consciente: quem tenta cadastrar um CNPJ verificado descobre que ele é
 cliente da Less Tax. Aceito no beta, porque sem essa mensagem o sócio legítimo
 não saberia que precisa pedir convite.
+
+## 2026-09-22 — O Raio-X mostra a simulação guardada, não recalcula
+
+Ao lançar um mês, o servidor calcula e grava a simulação (`simulacoes`), e o
+Raio-X lê a última gravada. Se as tabelas mudarem, o cliente continua vendo o
+número que viu da primeira vez; um mês relançado gera uma simulação nova.
+
+As oportunidades (Fator R, reforma, monofásicos, INSS do Anexo IV, sublimite)
+ficam em `lib/tributario/oportunidades.ts`, puras e testadas. A tela só desenha.
+
+As cores do protótipo viraram tokens em `globals.css`, já com os nomes do
+shadcn/ui (background, primary, border...). A instalação do shadcn fica para um
+passo separado, rodado no Windows: o CLI instala pacotes, e instalar pelo Linux
+trocaria os binários nativos do `node_modules`.

@@ -7,3 +7,6 @@
 export { calcular, anexoDa, aliquotaEfetiva, VERSAO_REGRAS } from "./calcular";
 export { TABELAS, TETO_SIMPLES, SUBLIMITE, FATOR_R_MINIMO } from "./tabelas";
 export type { Atividade, Anexo, Entrada, Resultado, Faixa } from "./tipos";
+export { oportunidades, manchete, rotuloRegime, PRAZO_REFORMA } from "./oportunidades";
+export type { Cartao, Tom, Contexto } from "./oportunidades";
+export { reais, porcento } from "./formato";
