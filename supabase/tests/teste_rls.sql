@@ -158,10 +158,27 @@ end;
 $$;
 reset role;
 
+-- 11. Conversas da Lessy: pelo app, só leitura (o limite de perguntas depende disso).
+set role authenticated;
+set request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+do $$
+begin
+  begin
+    insert into public.conversas (empresa_id, perfil_id)
+    select id, '11111111-1111-1111-1111-111111111111' from public.empresas where nome = 'Padaria da Ana';
+    insert into resultados values (11, 'FALHOU 11. usuário gravou conversa direto');
+  exception when insufficient_privilege then
+    insert into resultados values (11, 'OK     11. conversas e mensagens só o servidor grava');
+  end;
+end;
+$$;
+reset role;
+
 -- ------------------------------------------------------------------ limpeza
 reset role;
 reset request.jwt.claims;
 
+delete from public.conversas where empresa_id in (select id from public.empresas where nome in ('Padaria da Ana','Studio do Bruno','Original da Ana','Cópia do Bruno'));
 delete from public.meses    where empresa_id in (select id from public.empresas where nome in ('Padaria da Ana','Studio do Bruno','Original da Ana','Cópia do Bruno'));
 delete from public.membros  where empresa_id in (select id from public.empresas where nome in ('Padaria da Ana','Studio do Bruno','Original da Ana','Cópia do Bruno'));
 delete from public.empresas where nome in ('Padaria da Ana','Studio do Bruno','Original da Ana','Cópia do Bruno');
@@ -169,5 +186,5 @@ delete from public.leads    where nome = 'Lead de teste';
 delete from public.perfis   where id in ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222');
 delete from auth.users      where id in ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222');
 
--- O resultado: as dez linhas precisam começar com OK.
+-- O resultado: as onze linhas precisam começar com OK.
 select resultado from resultados order by ordem;

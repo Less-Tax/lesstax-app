@@ -229,3 +229,21 @@ continuam como foram mostradas.
   que só roda depois da checagem.
 - Verificar e desfazer ficam registrados em `eventos` (quem, quando, método).
 - Desfazer não devolve o CNPJ às cópias que o perderam.
+
+## 2026-09-23 — Lessy no app
+
+- Limite por pessoa e por mês (horário de Brasília): 3 no gratuito, 100 no
+  pago (`LESSY_MAX_GRATUITO`, `LESSY_MAX_MES_PAGO`), mais um teto geral por dia
+  (`LESSY_MAX_DIA`) para proteger o orçamento da API.
+- A pergunta só conta depois de respondida: pergunta e resposta são gravadas
+  juntas. Falha da API não gasta pergunta.
+- Conversas e mensagens: pelo app, só leitura. Quem grava é o servidor, com a
+  chave de serviço. Sem isso, o usuário apagaria mensagens para zerar o limite.
+- Os números da empresa e o histórico vão para a API a partir do banco — nunca
+  do navegador. O texto digitado (nome da empresa, cidade) é limpo e vai dentro
+  de `<dados_empresa>`, e as instruções mandam tratar isso como informação,
+  nunca como ordem (defesa contra prompt injection).
+- A Lessy não tem ferramentas: só lê o que mandamos e responde texto. Não
+  grava nada nem consulta outras empresas.
+- A resposta é mostrada como texto puro (sem HTML), então não abre porta
+  para XSS.

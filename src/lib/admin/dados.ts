@@ -1,16 +1,8 @@
 import "server-only";
-import { createClient } from "@supabase/supabase-js";
+import { clienteServico } from "@/lib/db/servico";
 
-/**
- * Cliente com a chave de serviço: IGNORA a RLS. Só é usado aqui, e só depois
- * de exigirAdmin(). Nunca exportar para componentes de cliente.
- */
-function clienteAdmin() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const chave = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !chave) throw new Error("[admin] faltam NEXT_PUBLIC_SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY");
-  return createClient(url, chave, { auth: { persistSession: false, autoRefreshToken: false } });
-}
+/** A chave de serviço ignora a RLS: só chamar depois de exigirAdmin(). */
+const clienteAdmin = clienteServico;
 
 // ---------------------------------------------------------------- usuários
 
