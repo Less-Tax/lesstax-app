@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CalendarPlus, ChevronRight } from "lucide-react";
 import { Passos } from "@/components/boas-vindas/passos";
+import { SeloVerificada } from "@/components/empresa/selo";
 import { SeletorMes } from "@/components/navegacao/seletor-mes";
 import { Cartao } from "@/components/raiox/cartao";
 import { Numero, Principal } from "@/components/raiox/destaques";
@@ -69,11 +70,9 @@ export default async function RaioX({ searchParams }: { searchParams: Promise<{ 
       {/* Empresa e mês */}
       <div className="flex flex-col gap-4">
         <div>
-          <h1 className="font-display text-2xl leading-tight font-bold">
+          <h1 className="flex flex-wrap items-center gap-x-2.5 gap-y-1 font-display text-2xl leading-tight font-bold">
             {empresa.nome}
-            {empresa.verificada_em ? (
-              <span className="ml-2 align-middle text-sm font-semibold text-primary">✓ verificada</span>
-            ) : null}
+            {empresa.verificada_em ? <SeloVerificada /> : null}
           </h1>
           <p className="text-sm text-muted-foreground">{rotuloRegime(resultado)}</p>
         </div>

@@ -23,8 +23,9 @@ export function SeletorMes({
   proximo: { href: string; rotulo: string } | null;
   calendario?: Omit<Parameters<typeof CalendarioMeses>[0], "rotulo">;
 }) {
+  // Largura máxima: em tela larga as setas ficam perto do mês, não nas pontas.
   return (
-    <div className="flex items-center gap-3">
+    <div className="mx-auto flex w-full max-w-sm items-center gap-3">
       {anterior ? (
         <Link href={anterior.href} aria-label={`Ir para ${anterior.rotulo}`} className={botao} scroll={false}>
           <ChevronLeft className="size-5" aria-hidden="true" />

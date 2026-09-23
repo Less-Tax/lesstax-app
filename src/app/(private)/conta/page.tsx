@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BadgeCheck, Building2, KeyRound, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { Building2, KeyRound, LogOut, ShieldCheck, UserRound } from "lucide-react";
 import { FormEmpresa } from "@/components/empresa/form-empresa";
+import { SeloVerificada } from "@/components/empresa/selo";
 import { ehAdmin } from "@/lib/admin/acesso";
 import { sair } from "@/lib/auth/acoes";
 import { usuarioAtual } from "@/lib/auth/usuario";
@@ -72,10 +73,7 @@ export default async function Conta() {
         Icone={Building2}
         extra={
           verificada ? (
-            <span className="flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-semibold text-primary">
-              <BadgeCheck className="size-3.5" aria-hidden="true" />
-              Verificada
-            </span>
+            <SeloVerificada />
           ) : (
             <span className="rounded-full bg-card-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground">
               Não verificada
