@@ -1,6 +1,6 @@
 import { porcento, reais } from "./formato";
 import { aliquotaEfetiva } from "./calcular";
-import { FATOR_R_MINIMO, TABELAS, TETO_SIMPLES } from "./tabelas";
+import { FATOR_R_MINIMO, TABELAS } from "./tabelas";
 import type { Entrada, Resultado } from "./tipos";
 
 /**
@@ -35,8 +35,8 @@ const INSS_SOBRE_PRO_LABORE = 0.11;
 
 /** A frase grande do topo do Raio-X. */
 export function manchete({ entrada, resultado }: Pick<Contexto, "entrada" | "resultado">) {
-  if (resultado.acimaDoTeto) {
-    return "Sua empresa fatura mais do que o limite do Simples Nacional. Aqui a conta depende de Lucro Presumido ou Real, e vale a análise de um especialista.";
+  if (resultado.foraDoSimples) {
+    return "Pela receita do ano, a empresa já saiu do Simples Nacional. A conta abaixo é só uma referência: fora do Simples ela depende de Lucro Presumido ou Real.";
   }
   const parte = porcento(resultado.imposto / entrada.faturamento);
   if (resultado.lucro >= 0) {
@@ -69,22 +69,6 @@ export function oportunidades(ctx: Contexto): Cartao[] {
         "Os números abaixo mostram quanto a empresa pagaria no Simples Nacional. Servem para saber a hora de deixar de ser MEI.",
       ],
     });
-  }
-
-  // --- Acima do teto: o Simples não se aplica.
-  if (r.acimaDoTeto) {
-    cartoes.push({
-      id: "fora-do-simples",
-      tom: "alerta",
-      etiqueta: "Fora do Simples",
-      titulo: "Aqui a conta é outra",
-      paragrafos: [
-        `Seu faturamento anual estimado é de ${reais(r.rbt12)}, acima do teto de ${reais(TETO_SIMPLES)} do Simples Nacional. Empresas nessa faixa pagam por Lucro Presumido ou Lucro Real, e a diferença entre os dois costuma ser grande.`,
-      ],
-      destaque: { rotulo: "Sem os impostos, sobram por mês", valor: reais(r.lucro) },
-      nota: "Este número ainda não desconta impostos: no Presumido ou no Real eles dependem da atividade, dos créditos e da folha. Um especialista faz essa conta com os seus números.",
-    });
-    return cartoes;
   }
 
   // --- Fator R: serviços técnicos entre o Anexo III e o V.
@@ -175,17 +159,7 @@ export function oportunidades(ctx: Contexto): Cartao[] {
     });
   }
 
-  // --- Entre R$ 3,6 e 4,8 milhões: ICMS/ISS saem do DAS e não entram na conta.
-  if (r.acimaDoSublimite) {
-    cartoes.push({
-      id: "sublimite",
-      tom: "alerta",
-      titulo: "Perto do limite",
-      paragrafos: [
-        `Seu faturamento anual estimado é de ${reais(r.rbt12)}. Acima de R$ 3,6 milhões, o ICMS e o ISS saem do DAS e passam a ser pagos à parte — e não estão incluídos nos números acima. Acima de R$ 4,8 milhões, a empresa sai do Simples.`,
-      ],
-    });
-  }
+  // Sublimite e teto viram avisos (situacao.avisos), medidos pela receita do ano.
 
   return cartoes;
 }
@@ -200,6 +174,7 @@ const ANEXO_TEXTO = {
 
 /** "Simples Nacional, Anexo V, serviços" — a linha pequena acima do nome. */
 export function rotuloRegime(r: Resultado) {
-  return r.acimaDoTeto ? "Faturamento acima do limite do Simples" : `Simples Nacional, ${ANEXO_TEXTO[r.anexo]}`;
+  if (r.foraDoSimples) return `Fora do Simples pela receita do ano · referência pelo ${ANEXO_TEXTO[r.anexo]}`;
+  return `Simples Nacional, ${ANEXO_TEXTO[r.anexo]}${r.icmsIssFora ? " · ICMS/ISS fora do DAS" : ""}`;
 }
 

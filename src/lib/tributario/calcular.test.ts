@@ -95,27 +95,21 @@ describe("monofásicos", () => {
   });
 });
 
-describe("limites do Simples", () => {
-  it("exatamente R$ 4,8 milhões por ano ainda é Simples", () => {
+describe("RBT12 só decide a faixa", () => {
+  it("exatamente R$ 4,8 milhões de RBT12 fica na 6ª faixa", () => {
     const r = calcular({ atividade: "comercio", faturamento: 400_000, folha: 0, custos: 0 });
-    expect(r.acimaDoTeto).toBe(false);
+    expect(r.faixa).toBe(6);
     expect(r.aliquotaEfetiva).toBeCloseTo(0.11125);
     expect(r.das).toBe(44_500);
   });
 
-  it("acima do teto não calcula imposto do Simples", () => {
+  it("RBT12 acima de R$ 4,8 milhões NÃO bloqueia: usa a 6ª faixa", () => {
     const r = calcular({ atividade: "comercio", faturamento: 500_000, folha: 100_000, custos: 200_000 });
-    expect(r.acimaDoTeto).toBe(true);
-    expect(r.acimaDoSublimite).toBe(false);
-    expect(r.aliquotaEfetiva).toBeNull();
-    expect(r.das).toBe(0);
-    expect(r.imposto).toBe(0);
-    expect(r.lucro).toBe(200_000);
-  });
-
-  it("entre R$ 3,6 e 4,8 milhões marca o sublimite", () => {
-    expect(calcular({ atividade: "comercio", faturamento: 300_000, folha: 0, custos: 0 }).acimaDoSublimite).toBe(false);
-    expect(calcular({ atividade: "comercio", faturamento: 350_000, folha: 0, custos: 0 }).acimaDoSublimite).toBe(true);
+    expect(r.faixa).toBe(6);
+    // (6.000.000 × 19% − 378.000) ÷ 6.000.000 = 12,7%
+    expect(r.aliquotaEfetiva).toBeCloseTo(0.127);
+    expect(r.das).toBe(63_500);
+    expect(r.foraDoSimples).toBe(false); // sem histórico, o ano só tem este mês
   });
 });
 

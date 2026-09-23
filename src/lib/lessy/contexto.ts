@@ -74,7 +74,6 @@ function linhaMes(m: MesContexto) {
   const base = `${MES[m.mes - 1]}/${m.ano}: entrou ${reais(m.faturamento)}, folha ${reais(m.folha)}, custos ${reais(m.custos)}`;
   const r = m.resultado;
   if (!r) return base;
-  if (r.acimaDoTeto) return `${base}; acima do teto do Simples`;
   return `${base}; imposto ${reais(r.imposto)} (Anexo ${r.anexo}, alíquota efetiva ${porcento(r.aliquotaEfetiva ?? 0)}); ${
     r.lucro < 0 ? `prejuízo ${reais(-r.lucro)}` : `lucro ${reais(r.lucro)}`
   }`;
@@ -101,7 +100,7 @@ export function contextoEmpresa(empresa: EmpresaContexto, meses: readonly MesCon
 
     const ultimo = [...recentes].reverse().find((m) => m.resultado);
     const r = ultimo?.resultado;
-    if (ultimo && r && !r.acimaDoTeto) {
+    if (ultimo && r) {
       const origem =
         r.origemRbt12.tipo === "historico"
           ? "soma dos 12 meses anteriores"
@@ -115,7 +114,13 @@ export function contextoEmpresa(empresa: EmpresaContexto, meses: readonly MesCon
         `- Fator R: ${porcento(r.fatorR)} (folha de 12 meses ${reais(r.folha12)})`,
         `- DAS: ${reais(r.das)}${r.inssFora > 0 ? `; INSS patronal fora do DAS: ${reais(r.inssFora)}` : ""}`,
       );
-      if (r.acimaDoSublimite) linhas.push("- Acima do sublimite de R$ 3,6 milhões: ICMS/ISS são pagos à parte e não estão no imposto acima.");
+      if (r.situacao) {
+        const ra = r.situacao.receitaAno;
+        linhas.push(`- Receita do ano de ${ra.ano} até ${MES[ra.mes - 1]} (RBA, decide sublimite e teto): ${reais(ra.rba)}`);
+        if (r.foraDoSimples) linhas.push("- Pela receita do ano, a empresa já saiu do Simples: os números são só referência.");
+        if (r.icmsIssFora) linhas.push("- ICMS/ISS estão fora do DAS neste mês: são pagos à parte e não estão no imposto acima.");
+        for (const a of r.situacao.avisos) linhas.push(`- Aviso: ${a.titulo}. ${a.texto}`);
+      }
       if (r.monofasicoEmDobro > 0) {
         linhas.push(`- Possível PIS/Cofins pago em dobro em monofásicos: ${reais(r.monofasicoEmDobro)} por mês (só se o contador não separa essas vendas).`);
       }

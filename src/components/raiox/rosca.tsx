@@ -26,7 +26,6 @@ export function RoscaRaioX({
 }) {
   const [ativa, setAtiva] = useState<string | null>(null);
   const prejuizo = resultado.lucro < 0;
-  const acima = resultado.acimaDoTeto;
 
   const fatias: Fatia[] = [
     { chave: "imposto", rotulo: "Impostos", valor: resultado.imposto, cor: "var(--grafico-imposto)" },
@@ -34,11 +33,11 @@ export function RoscaRaioX({
     { chave: "custo", rotulo: "Custo total", valor: entrada.custos, cor: "var(--grafico-custo)" },
     {
       chave: "lucro",
-      rotulo: acima ? "Sobra antes dos impostos" : "Lucro",
+      rotulo: "Lucro",
       valor: resultado.lucro,
       cor: "var(--grafico-lucro)",
     },
-  ].filter((f) => !(acima && f.chave === "imposto") && !(prejuizo && f.chave === "lucro"));
+  ].filter((f) => !(prejuizo && f.chave === "lucro"));
 
   const total = prejuizo ? fatias.reduce((s, f) => s + f.valor, 0) : entrada.faturamento;
   const visiveis = fatias.filter((f) => f.valor > 0);
@@ -47,9 +46,7 @@ export function RoscaRaioX({
   // O meio: a fatia apontada; sem nada apontado, o número principal.
   const centro = escolhida
     ? { valor: escolhida.valor, rotulo: escolhida.rotulo, parte: porcento(escolhida.valor / total) }
-    : acima
-      ? { valor: resultado.lucro, rotulo: "sobra antes dos impostos", parte: null }
-      : prejuizo
+    : prejuizo
         ? { valor: -resultado.lucro, rotulo: "de prejuízo", parte: null }
         : { valor: resultado.imposto, rotulo: "de imposto", parte: porcento(resultado.imposto / total) };
 

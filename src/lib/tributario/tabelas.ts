@@ -64,3 +64,35 @@ export const INSS_PATRONAL_ANEXO_IV = 0.2;
 
 /** Parte do DAS do Anexo I que corresponde a PIS + Cofins (faixas 1 a 5). */
 export const PIS_COFINS_NO_DAS_ANEXO_I = 0.155;
+
+/**
+ * Parte do DAS que é ICMS (Anexos I e II) ou ISS (III, IV e V), por faixa.
+ * Serve só para tirar essa parte do DAS quando ela passa a ser paga à parte
+ * (sublimite). Na 6ª faixa a lei já não põe ICMS/ISS no DAS: 0.
+ * Fonte: percentuais de repartição dos Anexos I a V (LC 155/2016).
+ */
+export const PARTE_ICMS_ISS: Record<"I" | "II" | "III" | "IV" | "V", readonly number[]> = {
+  I: [0.34, 0.34, 0.335, 0.335, 0.335, 0],
+  II: [0.32, 0.32, 0.32, 0.32, 0.32, 0],
+  III: [0.335, 0.32, 0.325, 0.325, 0.335, 0],
+  IV: [0.445, 0.4, 0.4, 0.4, 0.4, 0],
+  V: [0.14, 0.17, 0.19, 0.21, 0.235, 0],
+};
+
+/** Nota dos Anexos III e IV, 5ª faixa: o ISS efetivo não passa de 5% da receita. */
+export const ISS_MAXIMO_FAIXA_5 = 0.05;
+
+/**
+ * Os quatro marcos, medidos pela receita do ANO-CALENDÁRIO (RBA), não pela RBT12.
+ * LC 123: art. 3º, II, §§ 9º e 9º-A (teto e tolerância de 20%); art. 13-A e
+ * art. 20 (sublimite e a mesma tolerância).
+ */
+export const PATAMARES = {
+  sublimite: 3_600_000,
+  sublimiteMais20: 4_320_000,
+  teto: 4_800_000,
+  tetoMais20: 5_760_000,
+} as const;
+
+/** Alerta quando a receita do ano chega a esta fração de um marco. */
+export const ALERTA_PATAMAR = 0.8;

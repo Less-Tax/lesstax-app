@@ -130,7 +130,7 @@ export default async function Meses({
                         <p className="font-semibold">{rotuloCompetencia(m.ano, m.mes)}</p>
                         <p className="text-xs text-muted-foreground">
                           <span className="whitespace-nowrap">Entrou {reais(m.faturamento)}</span>
-                          {r && !r.acimaDoTeto ? <> <span className="whitespace-nowrap">· imposto {reais(r.imposto)}</span></> : null}
+                          {r ? <> <span className="whitespace-nowrap">· imposto {reais(r.imposto)}</span></> : null}
                         </p>
                       </div>
                       {r ? (

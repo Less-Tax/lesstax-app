@@ -30,8 +30,47 @@ export type Entrada = {
  */
 export type OrigemRbt12 = { tipo: "historico" | "media" | "mes"; meses: number };
 
+/**
+ * Receita do ano-calendário (RBA): é ela, e não a RBT12, que decide sublimite,
+ * teto e permanência no Simples.
+ */
+export type ReceitaAno = {
+  ano: number;
+  mes: number;
+  /** Janeiro até o mês calculado, inclusive. */
+  rba: number;
+  /** Janeiro até o mês anterior. Efeitos "a partir do mês seguinte" olham para ela. */
+  rbaAteMesAnterior: number;
+  /** Ano anterior inteiro (só o que foi lançado). null = nenhum mês lançado. */
+  rbaAnoAnterior: number | null;
+  /** Primeiro mês do ano em que a RBA passou de cada marco. */
+  excessos: Partial<Record<Patamar, number>>;
+  /** Meses de janeiro até o calculado que não foram lançados (a RBA pode estar baixa). */
+  mesesSemLancamento: number;
+};
+
+export type Patamar = "sublimite" | "sublimiteMais20" | "teto" | "tetoMais20";
+
 /** Receita e folha dos 12 meses anteriores, já apuradas a partir do histórico. */
-export type Historico12 = { rbt12: number; folha12: number; origem: OrigemRbt12 };
+export type Historico12 = { rbt12: number; folha12: number; origem: OrigemRbt12; ano?: ReceitaAno };
+
+export type Aviso = {
+  id: string;
+  /** alerta: algo mudou ou vai mudar com prazo; atencao: chegando perto de um marco. */
+  nivel: "alerta" | "atencao";
+  titulo: string;
+  texto: string;
+};
+
+/** Onde a empresa está neste mês em relação aos marcos do Simples. */
+export type Situacao = {
+  /** false = já excluída do Simples neste mês (o cálculo fica como referência). */
+  noSimples: boolean;
+  /** false = ICMS/ISS pagos fora do DAS neste mês (não somados). */
+  icmsIssNoDas: boolean;
+  receitaAno: ReceitaAno;
+  avisos: Aviso[];
+};
 
 export type Resultado = {
   regrasVersao: string;
@@ -43,14 +82,17 @@ export type Resultado = {
   /** Folha de 12 meses ÷ receita de 12 meses. */
   fatorR: number;
   anexo: Anexo;
-  /** true quando a receita anual passa do teto do Simples (R$ 4,8 milhões). */
-  acimaDoTeto: boolean;
+  /** Faixa da tabela (1 a 6) pela RBT12. Acima de R$ 4,8 mi de RBT12, a 6ª. */
+  faixa: number;
   /**
-   * true entre R$ 3,6 e 4,8 milhões por ano. Nessa faixa o ICMS e o ISS saem do
-   * DAS e são pagos à parte — e NÃO estão incluídos em `imposto`.
+   * true quando a empresa já está excluída do Simples neste mês, pela receita do
+   * ano (não pela RBT12). O imposto continua calculado, como referência.
    */
-  acimaDoSublimite: boolean;
-  /** Alíquota efetiva. null acima do teto, onde o Simples não se aplica. */
+  foraDoSimples: boolean;
+  /** true quando ICMS/ISS estão fora do DAS neste mês — e NÃO estão em `imposto`. */
+  icmsIssFora: boolean;
+  situacao: Situacao;
+  /** Alíquota efetiva. Simulações antigas podem ter null. */
   aliquotaEfetiva: number | null;
   das: number;
   /** INSS patronal pago fora do DAS (só Anexo IV). */

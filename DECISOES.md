@@ -277,3 +277,22 @@ continuam como foram mostradas.
   painel admin (no máximo 1 por pessoa a cada 7 dias) e a equipe ativa na
   aba Usuários (30 dias, 1 ano ou sem prazo). Ativar e desativar ficam
   registrados em `eventos`.
+
+## 2026-09-23 — RBT12 e RBA separadas (revisão tributária, Camada 0)
+
+- RBT12 (12 meses anteriores) decide só faixa, alíquota nominal, dedução e
+  alíquota efetiva. Acima de R$ 4,8 mi de RBT12 o cálculo segue, na 6ª faixa.
+- RBA (receita do ano-calendário, de janeiro até o mês) decide sublimite, teto
+  e permanência no Simples, em quatro marcos: 3,6 / 4,32 / 4,8 / 5,76 mi.
+  Efeitos "no mês seguinte" olham a RBA até o mês anterior; efeitos "em
+  janeiro" olham o ano anterior.
+- ICMS/ISS fora do DAS: a parte deles sai do DAS pela repartição da faixa
+  (`PARTE_ICMS_ISS`), com o teto de 5% de ISS da 5ª faixa dos Anexos III e IV,
+  e não é somada ao imposto. O app ainda não estima esse valor.
+- Empresa já excluída pela RBA: o imposto continua calculado, como referência,
+  com aviso. "Não calculo" deixou de existir.
+- Avisos: 80% de cada marco; ao passar, o que muda e o prazo de comunicação no
+  Portal do Simples (LC 123, art. 30) com a multa (art. 36).
+- Fora desta entrega: início de atividade (limites proporcionais) e a regra de
+  alíquota da parcela que excede (Res. CGSN 140, art. 24).
+- Casos-teste: `npx tsx scripts/casos-limites.ts`.

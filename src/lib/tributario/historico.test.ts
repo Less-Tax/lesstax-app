@@ -42,7 +42,7 @@ describe("historico12", () => {
 
   it("sem nenhum mês anterior, usa o próprio mês × 12", () => {
     const h = historico12([], { ano: 2026, mes: 9, faturamento: 15_000, folha: 3_000 });
-    expect(h).toEqual({ rbt12: 180_000, folha12: 36_000, origem: { tipo: "mes", meses: 0 } });
+    expect(h).toMatchObject({ rbt12: 180_000, folha12: 36_000, origem: { tipo: "mes", meses: 0 } });
   });
 
   it("ignora meses de mais de 12 meses atrás e meses depois do calculado", () => {

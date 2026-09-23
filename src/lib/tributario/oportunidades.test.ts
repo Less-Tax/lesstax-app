@@ -26,9 +26,9 @@ describe("manchete", () => {
     expect(manchete({ entrada: e, resultado: calcular(e) })).toContain("passam o faturamento");
   });
 
-  it("acima do teto não fala em imposto do Simples", () => {
+  it("RBT12 acima de R$ 4,8 mi não bloqueia: a manchete mostra o imposto", () => {
     const e: Entrada = { atividade: "comercio", faturamento: 500_000, folha: 0, custos: 0 };
-    expect(manchete({ entrada: e, resultado: calcular(e) })).toContain("limite do Simples");
+    expect(manchete({ entrada: e, resultado: calcular(e) })).toContain("vão para impostos");
   });
 });
 
@@ -85,14 +85,10 @@ describe("outros cartões", () => {
     expect(cartao(contexto(e), "inss-fora")?.paragrafos[0]).toContain("3.000");
   });
 
-  it("sublimite avisa que ICMS/ISS não entram na conta", () => {
-    const e: Entrada = { atividade: "comercio", faturamento: 350_000, folha: 0, custos: 0 };
-    expect(cartao(contexto(e), "sublimite")?.paragrafos[0]).toContain("não estão incluídos");
-  });
-
-  it("acima do teto mostra só o cartão de fora do Simples", () => {
+  it("sublimite e teto não viram cartão: são avisos da situação no ano", () => {
     const e: Entrada = { atividade: "profissionais", faturamento: 500_000, folha: 10_000, custos: 0 };
-    expect(ids(contexto(e))).toEqual(["fora-do-simples"]);
+    expect(ids(contexto(e))).not.toContain("fora-do-simples");
+    expect(ids(contexto(e))).not.toContain("sublimite");
   });
 
   it("empresa fora do Simples na Receita recebe o alerta primeiro", () => {

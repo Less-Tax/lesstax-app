@@ -8,6 +8,7 @@ import { Cartao } from "@/components/raiox/cartao";
 import { Numero, Principal } from "@/components/raiox/destaques";
 import { Evolucao, type PontoEvolucao } from "@/components/raiox/evolucao";
 import { Receita12 } from "@/components/raiox/receita-12";
+import { AvisosLimite } from "@/components/raiox/avisos";
 import { RoscaRaioX } from "@/components/raiox/rosca";
 import { chave, lerChave, mesAtual, somar } from "@/lib/competencia";
 import { empresasDoUsuario } from "@/lib/db/empresas";
@@ -185,6 +186,8 @@ export default async function RaioX({
         </div>
       ) : null}
 
+      {liberado && resultado.situacao ? <AvisosLimite avisos={resultado.situacao.avisos} /> : null}
+
       {!liberado ? (
         <BloqueioPremium
           titulo={`O Raio-X de ${competencia(entrada.ano, entrada.mes).toLowerCase()} é do Premium`}
@@ -194,21 +197,16 @@ export default async function RaioX({
         <div className="grid items-start gap-6 lg:grid-cols-[1.35fr_1fr]">
           {/* Coluna principal: os números e a evolução */}
           <div className="flex flex-col gap-4">
-            {resultado.acimaDoTeto ? (
-              <Principal
-                rotulo={`Sobra de ${nomeMes}, antes dos impostos`}
-                valor={resultado.lucro}
-                apoio="Acima do teto do Simples: os impostos dependem de Lucro Presumido ou Real."
-                antes={antes((s) => s.resultado.lucro)}
-              />
-            ) : (
-              <Principal
-                rotulo={`Imposto de ${nomeMes}`}
-                valor={resultado.imposto}
-                apoio={`${porcento(aliquota)} de tudo que entrou`}
-                antes={antes((s) => s.resultado.imposto)}
-              />
-            )}
+            <Principal
+              rotulo={`Imposto de ${nomeMes}`}
+              valor={resultado.imposto}
+              apoio={
+                resultado.foraDoSimples
+                  ? "Referência: pela receita do ano, a empresa já saiu do Simples."
+                  : `${porcento(aliquota)} de tudo que entrou${resultado.icmsIssFora ? ", sem o ICMS/ISS (pago à parte)" : ""}`
+              }
+              antes={antes((s) => s.resultado.imposto)}
+            />
 
             <div className="grid grid-cols-2 gap-3">
               <Numero
