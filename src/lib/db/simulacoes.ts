@@ -40,3 +40,27 @@ export async function ultimaSimulacao(empresaId: string): Promise<Simulacao | nu
   if (error) throw new Error(`[simulacoes] ler: ${error.message}`);
   return data as Simulacao | null;
 }
+
+/**
+ * A simulação mais recente de cada mês, do mais antigo para o mais novo.
+ * Um mês relançado tem várias simulações; vale a última.
+ */
+export async function simulacoesPorMes(empresaId: string): Promise<Simulacao[]> {
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase
+    .from("simulacoes")
+    .select("id, entrada, resultado, regras_versao, criada_em")
+    .eq("empresa_id", empresaId)
+    .order("criada_em", { ascending: false })
+    .limit(500);
+  if (error) throw new Error(`[simulacoes] listar: ${error.message}`);
+
+  const porMes = new Map<string, Simulacao>();
+  for (const s of (data ?? []) as Simulacao[]) {
+    const chave = `${s.entrada.ano}-${s.entrada.mes}`;
+    if (!porMes.has(chave)) porMes.set(chave, s); // a primeira é a mais nova
+  }
+  return [...porMes.values()].sort(
+    (a, b) => a.entrada.ano * 12 + a.entrada.mes - (b.entrada.ano * 12 + b.entrada.mes),
+  );
+}

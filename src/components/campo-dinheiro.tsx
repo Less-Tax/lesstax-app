@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { mascaraDinheiro } from "@/lib/validacao/mes";
+import { formatarDinheiro, mascaraDinheiro } from "@/lib/validacao/mes";
 
 /** Campo de valor em reais: põe o ponto de milhar enquanto a pessoa digita. */
 export function CampoDinheiro({
@@ -10,14 +10,16 @@ export function CampoDinheiro({
   dica,
   obrigatorio = false,
   placeholder,
+  valorInicial,
 }: {
   id: string;
   rotulo: string;
   dica?: string;
   obrigatorio?: boolean;
   placeholder?: string;
+  valorInicial?: number;
 }) {
-  const [valor, setValor] = useState("");
+  const [valor, setValor] = useState(valorInicial === undefined ? "" : formatarDinheiro(valorInicial));
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={id} className="text-sm font-semibold">

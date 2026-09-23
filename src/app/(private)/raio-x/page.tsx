@@ -1,25 +1,40 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { CalendarPlus } from "lucide-react";
+import { SeletorMes } from "@/components/navegacao/seletor-mes";
 import { BarraRaioX } from "@/components/raiox/barra";
 import { Cartao } from "@/components/raiox/cartao";
+import { Numero, Principal } from "@/components/raiox/destaques";
+import { Evolucao, type PontoEvolucao } from "@/components/raiox/evolucao";
+import { chave, lerChave } from "@/lib/competencia";
 import { empresasDoUsuario } from "@/lib/db/empresas";
-import { ultimaSimulacao } from "@/lib/db/simulacoes";
-import { competencia } from "@/lib/formato";
-import { manchete, oportunidades, rotuloRegime } from "@/lib/tributario";
-import { mascaraCnpj } from "@/lib/validacao/cnpj";
+import { simulacoesPorMes } from "@/lib/db/simulacoes";
+import { competencia, nomeDoMes, porcento } from "@/lib/formato";
+import { oportunidades, rotuloRegime } from "@/lib/tributario";
 
 export const metadata = { title: "Raio-X — Less Tax" };
 
-export default async function RaioX() {
+const curto = (ano: number, mes: number) => `${nomeDoMes(mes).slice(0, 3)}/${String(ano).slice(2)}`;
+
+export default async function RaioX({ searchParams }: { searchParams: Promise<{ mes?: string }> }) {
   const [empresa] = await empresasDoUsuario();
   if (!empresa) redirect("/empresa/nova");
 
-  const simulacao = await ultimaSimulacao(empresa.id);
-  if (!simulacao) redirect("/meses/novo");
+  // Uma simulação por mês lançado, do mais antigo para o mais novo.
+  // O Raio-X mostra o que foi calculado e guardado — não recalcula.
+  const simulacoes = await simulacoesPorMes(empresa.id);
+  if (simulacoes.length === 0) redirect("/meses");
 
-  // Mostra o que foi calculado e guardado — não recalcula. Se a regra mudar,
-  // o cliente continua vendo o número que viu da primeira vez.
-  const { entrada, resultado } = simulacao;
+  const pedido = lerChave((await searchParams).mes);
+  const indice = pedido ? simulacoes.findIndex((s) => chave(s.entrada) === chave(pedido)) : -1;
+  const i = indice >= 0 ? indice : simulacoes.length - 1;
+
+  const { entrada, resultado } = simulacoes[i];
+  const anterior = simulacoes[i - 1] ?? null;
+  const proximo = simulacoes[i + 1] ?? null;
+  const mesAntes = anterior ? nomeDoMes(anterior.entrada.mes) : "";
+  const antes = (f: (s: (typeof simulacoes)[number]) => number) => (anterior ? { valor: f(anterior), mes: mesAntes } : null);
+
   const cartoes = oportunidades({
     entrada,
     resultado,
@@ -28,62 +43,127 @@ export default async function RaioX() {
     hoje: new Date(),
   });
 
+  const pontos: PontoEvolucao[] = simulacoes.slice(-12).map((s) => ({
+    chave: chave(s.entrada),
+    rotulo: curto(s.entrada.ano, s.entrada.mes),
+    nomeCompleto: competencia(s.entrada.ano, s.entrada.mes),
+    imposto: s.resultado.imposto,
+    lucro: s.resultado.lucro,
+    escolhido: s === simulacoes[i],
+  }));
+
+  const aliquota = resultado.imposto / entrada.faturamento;
+  const nomeMes = nomeDoMes(entrada.mes);
+
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-7 px-4 py-6">
-      {/* Cabeçalho da empresa */}
-      <section className="flex flex-col gap-1">
-        <p className="text-sm text-muted-foreground">{rotuloRegime(resultado)}</p>
-        <h1 className="font-display text-3xl leading-tight font-bold">{empresa.nome}</h1>
-        <p className="text-sm text-muted-foreground">
-          {[empresa.cnpj ? `CNPJ ${mascaraCnpj(empresa.cnpj)}` : null, competencia(entrada.ano, entrada.mes)]
-            .filter(Boolean)
-            .join(" · ")}
-          {empresa.verificada_em ? (
-            <span className="ml-2 font-semibold text-primary">✓ verificada</span>
-          ) : null}
-        </p>
-      </section>
+    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6">
+      {/* Empresa e mês */}
+      <div className="flex flex-col gap-4">
+        <div>
+          <h1 className="font-display text-2xl leading-tight font-bold">
+            {empresa.nome}
+            {empresa.verificada_em ? (
+              <span className="ml-2 align-middle text-sm font-semibold text-primary">✓ verificada</span>
+            ) : null}
+          </h1>
+          <p className="text-sm text-muted-foreground">{rotuloRegime(resultado)}</p>
+        </div>
+        <SeletorMes
+          rotulo={competencia(entrada.ano, entrada.mes)}
+          detalhe={`${i + 1} de ${simulacoes.length} ${simulacoes.length === 1 ? "mês lançado" : "meses lançados"}`}
+          anterior={
+            anterior
+              ? { href: `/raio-x?mes=${chave(anterior.entrada)}`, rotulo: competencia(anterior.entrada.ano, anterior.entrada.mes) }
+              : null
+          }
+          proximo={
+            proximo
+              ? { href: `/raio-x?mes=${chave(proximo.entrada)}`, rotulo: competencia(proximo.entrada.ano, proximo.entrada.mes) }
+              : null
+          }
+        />
+      </div>
 
       {empresa.cnpj_removido_em && !empresa.cnpj ? (
-        <div role="status" className="flex flex-col gap-1 rounded-xl border-l-4 border-l-imposto bg-imposto-soft p-3.5 text-sm">
+        <div role="status" className="rounded-2xl border-l-4 border-l-imposto bg-imposto-soft p-4 text-sm">
           <p className="font-semibold">O CNPJ foi removido desta empresa</p>
           <p>
-            Outra conta confirmou ser a dona desse CNPJ. Os números que você lançou continuam salvos.
-            Se você faz parte da empresa, peça ao responsável para convidar você.
+            Outra conta confirmou ser a dona desse CNPJ. Os números que você lançou continuam salvos. Se você faz
+            parte da empresa, peça ao responsável para convidar você.
           </p>
         </div>
       ) : null}
 
-      {/* A barra */}
-      <section className="flex flex-col gap-3">
-        <h2 className="font-display text-xl font-bold">De cada R$ 100 que entram</h2>
-        <BarraRaioX entrada={entrada} resultado={resultado} />
-      </section>
+      <div className="grid items-start gap-6 lg:grid-cols-[1.35fr_1fr]">
+        {/* Coluna principal: os números e a evolução */}
+        <div className="flex flex-col gap-4">
+          {resultado.acimaDoTeto ? (
+            <Principal
+              rotulo={`Sobra de ${nomeMes}, antes dos impostos`}
+              valor={resultado.lucro}
+              apoio="Acima do teto do Simples: os impostos dependem de Lucro Presumido ou Real."
+              antes={antes((s) => s.resultado.lucro)}
+            />
+          ) : (
+            <Principal
+              rotulo={`Imposto de ${nomeMes}`}
+              valor={resultado.imposto}
+              apoio={`${porcento(aliquota)} de tudo que entrou`}
+              antes={antes((s) => s.resultado.imposto)}
+            />
+          )}
 
-      <p className="font-display text-xl leading-snug font-semibold">{manchete({ entrada, resultado })}</p>
+          <div className="grid grid-cols-2 gap-3">
+            <Numero rotulo="Entrou" valor={entrada.faturamento} antes={antes((s) => s.entrada.faturamento)} />
+            <Numero
+              rotulo={resultado.lucro < 0 ? "Prejuízo" : "Lucro"}
+              valor={resultado.lucro}
+              antes={antes((s) => s.resultado.lucro)}
+              negativoEmDestaque
+            />
+          </div>
 
-      {/* Oportunidades e alertas */}
-      {cartoes.length > 0 ? (
-        <section className="flex flex-col gap-3">
-          <h2 className="font-display text-xl font-bold">O que olhar agora</h2>
-          {cartoes.map((c) => (
-            <Cartao key={c.id} cartao={c} />
-          ))}
-        </section>
-      ) : null}
+          <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
+            <h2 className="font-display text-lg font-bold">Mês a mês</h2>
+            {pontos.length >= 2 ? (
+              <Evolucao pontos={pontos} />
+            ) : (
+              <div className="flex flex-col items-start gap-3 py-2 text-sm text-muted-foreground">
+                <p>Lance pelo menos mais um mês para ver se o imposto e o lucro estão subindo ou caindo.</p>
+                <Link
+                  href="/meses"
+                  className="flex items-center gap-2 rounded-full bg-primary-soft px-4 py-2 font-semibold text-primary"
+                >
+                  <CalendarPlus className="size-4" aria-hidden="true" />
+                  Lançar outro mês
+                </Link>
+              </div>
+            )}
+          </section>
+        </div>
 
-      <div className="flex flex-col gap-2">
-        <Link
-          href="/meses/novo"
-          className="rounded-xl border border-primary px-4 py-3 text-center font-semibold text-primary"
-        >
-          Lançar outro mês
-        </Link>
-        <p className="text-center text-xs text-muted-foreground">
-          Estimativas com as tabelas do Simples Nacional ({resultado.regrasVersao}). Não substituem a análise de um
-          contador.
-        </p>
+        {/* Coluna lateral: para onde vai o dinheiro e o que olhar */}
+        <div className="flex flex-col gap-4">
+          <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
+            <h2 className="font-display text-lg font-bold">De cada R$ 100 que entram</h2>
+            <BarraRaioX entrada={entrada} resultado={resultado} />
+          </section>
+
+          {cartoes.length > 0 ? (
+            <section className="flex flex-col gap-3">
+              <h2 className="font-display text-lg font-bold">O que olhar agora</h2>
+              {cartoes.map((c) => (
+                <Cartao key={c.id} cartao={c} />
+              ))}
+            </section>
+          ) : null}
+        </div>
       </div>
+
+      <p className="text-center text-xs text-muted-foreground">
+        Estimativas com as tabelas do Simples Nacional ({resultado.regrasVersao}). Não substituem a análise de um
+        contador.
+      </p>
     </main>
   );
 }

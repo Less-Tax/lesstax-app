@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { esquemaMes, lerDinheiro, mascaraDinheiro } from "./mes";
+import { esquemaMes, formatarDinheiro, lerDinheiro, mascaraDinheiro } from "./mes";
 
 describe("lerDinheiro", () => {
   it("entende o jeito brasileiro de escrever", () => {
@@ -45,5 +45,14 @@ describe("esquemaMes", () => {
 
   it("recusa mês fora de 1 a 12", () => {
     expect(esquemaMes.safeParse({ ...base, mes: "13" }).success).toBe(false);
+  });
+});
+
+describe("formatarDinheiro", () => {
+  it("escreve o valor salvo do jeito que a pessoa digitaria", () => {
+    expect(formatarDinheiro(60_000)).toBe("60.000");
+    expect(formatarDinheiro(60_000.5)).toBe("60.000,50");
+    expect(formatarDinheiro(0)).toBe("0");
+    expect(lerDinheiro(formatarDinheiro(1_234_567.89))).toBe(1_234_567.89);
   });
 });

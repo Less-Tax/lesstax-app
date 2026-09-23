@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { usuarioAtual } from "@/lib/auth/usuario";
+import { chave, comparar, mesAtual } from "@/lib/competencia";
 import { empresasDoUsuario } from "@/lib/db/empresas";
 import { salvarMes } from "@/lib/db/meses";
 import { registrarSimulacao } from "@/lib/db/simulacoes";
@@ -29,10 +30,12 @@ export async function lancarMes(_anterior: EstadoMes, dados: FormData): Promise<
   });
   if (!lido.success) return { erro: lido.error.issues[0].message };
 
+  const d = lido.data;
+  if (comparar(d, mesAtual()) > 0) return { erro: "Não dá para lançar um mês que ainda não chegou." };
+
   const atividade = empresa.atividade as Atividade;
   if (!ATIVIDADES.includes(atividade)) return { erro: "A atividade da empresa está inválida." };
 
-  const d = lido.data;
   // Monofásico só existe no comércio; nos outros ramos grava zero.
   const monofasico = atividade === "comercio" ? d.monofasico : 0;
 
@@ -45,5 +48,5 @@ export async function lancarMes(_anterior: EstadoMes, dados: FormData): Promise<
     return { erro: "Não consegui salvar agora. Tente de novo em instantes." };
   }
 
-  redirect("/raio-x");
+  redirect(`/meses?mes=${chave(d)}&salvo=1`);
 }

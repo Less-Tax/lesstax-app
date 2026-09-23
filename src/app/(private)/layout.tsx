@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Abas } from "@/components/navegacao/abas";
 import { sair } from "@/lib/auth/acoes";
 import { usuarioAtual } from "@/lib/auth/usuario";
 
@@ -18,17 +19,28 @@ export default async function LayoutPrivado({
 
   return (
     <>
-      <header className="mx-auto flex w-full max-w-md items-center justify-between px-4 pt-5">
-        <Link href="/raio-x" className="text-lg text-primary">
-          less<b>tax</b>
-        </Link>
-        <form action={sair}>
-          <button type="submit" className="text-sm text-muted-foreground hover:text-foreground">
-            Sair
-          </button>
-        </form>
+      <header className="border-b border-border bg-card">
+        <div className="mx-auto flex h-14 w-full max-w-5xl items-center justify-between gap-4 px-4">
+          <Link href="/raio-x" className="font-display text-xl text-primary">
+            less<b>tax</b>
+          </Link>
+          <div className="hidden md:block">
+            <Abas />
+          </div>
+          <form action={sair}>
+            <button type="submit" className="text-sm text-muted-foreground hover:text-foreground">
+              Sair
+            </button>
+          </form>
+        </div>
       </header>
-      {children}
+
+      {/* espaço para a barra de abas fixa no celular */}
+      <div className="flex flex-1 flex-col pb-20 md:pb-0">{children}</div>
+
+      <div className="md:hidden">
+        <Abas />
+      </div>
     </>
   );
 }

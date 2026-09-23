@@ -142,3 +142,21 @@ As cores do protótipo viraram tokens em `globals.css`, já com os nomes do
 shadcn/ui (background, primary, border...). A instalação do shadcn fica para um
 passo separado, rodado no Windows: o CLI instala pacotes, e instalar pelo Linux
 trocaria os binários nativos do `node_modules`.
+
+## 2026-09-22 — Abas Raio-X e Meses, estilo app de banco
+
+O app ganhou duas abas: **Raio-X** (ler) e **Meses** (lançar e corrigir). No
+celular ficam presas embaixo; no computador sobem para o cabeçalho.
+
+- Meses: `/meses?mes=2026-08`. Setas navegam mês a mês (até o mês corrente),
+  o formulário já vem preenchido se o mês foi lançado, e a lista ao lado mostra
+  todos os lançados. Depois de salvar, oferece "Ver o Raio-X" e "Lançar o mês
+  anterior" — o caminho mais rápido para preencher o histórico.
+- Raio-X: `/raio-x?mes=2026-08`. Setas andam só entre meses lançados. No topo,
+  o imposto do mês em destaque e a comparação com o mês lançado anterior;
+  embaixo, o gráfico de imposto e lucro dos últimos 12 meses (clicar numa
+  coluna abre aquele mês) e uma tabela com os mesmos números.
+
+As cores do gráfico são vizinhas das da marca, ajustadas no validador de
+paletas: as originais falhavam em saturação (daltonismo) e em contraste com o
+fundo branco. Ficam em `--grafico-imposto` e `--grafico-lucro`.

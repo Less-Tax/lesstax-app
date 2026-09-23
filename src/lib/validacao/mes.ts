@@ -44,3 +44,10 @@ export const esquemaMes = z.object({
 });
 
 export type DadosMes = z.infer<typeof esquemaMes>;
+
+/** 60000 → "60.000"; 60000.5 → "60.000,50". Para preencher o campo com um valor salvo. */
+export function formatarDinheiro(valor: number) {
+  const [inteiro, decimais] = valor.toFixed(2).split(".");
+  const comPontos = inteiro.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return decimais === "00" ? comPontos : `${comPontos},${decimais}`;
+}

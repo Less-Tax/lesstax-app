@@ -24,6 +24,10 @@
   --folha: #4d6b8a;
   --custo: #8fa29a;
   --lucro: #1f7a5a;
+
+  /* Gráficos: vizinhos das cores da marca, validados para daltonismo e contraste */
+  --grafico-imposto: #b87d08;
+  --grafico-lucro: #12805a;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -45,6 +49,9 @@
     --folha: #7fa3c8;
     --custo: #6f827a;
     --lucro: #4fc497;
+
+    --grafico-imposto: #bd8820;
+    --grafico-lucro: #38ab80;
   }
 }
 
@@ -66,6 +73,8 @@
   --color-folha: var(--folha);
   --color-custo: var(--custo);
   --color-lucro: var(--lucro);
+  --color-grafico-imposto: var(--grafico-imposto);
+  --color-grafico-lucro: var(--grafico-lucro);
 
   --font-sans: var(--font-corpo);
   --font-display: var(--font-titulo);
