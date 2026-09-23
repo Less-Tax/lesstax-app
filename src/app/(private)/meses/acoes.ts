@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { usuarioAtual } from "@/lib/auth/usuario";
 import { chave, comparar, mesAtual } from "@/lib/competencia";
 import { empresasDoUsuario } from "@/lib/db/empresas";
-import { salvarMes } from "@/lib/db/meses";
-import { registrarSimulacao } from "@/lib/db/simulacoes";
-import { calcular, type Atividade } from "@/lib/tributario";
+import { mesesDaEmpresa, salvarMes } from "@/lib/db/meses";
+import { registrarSimulacoes } from "@/lib/db/simulacoes";
+import { calcular, historico12, type Atividade } from "@/lib/tributario";
 import { esquemaMes } from "@/lib/validacao/mes";
 
 export type EstadoMes = { erro?: string };
@@ -41,8 +41,26 @@ export async function lancarMes(_anterior: EstadoMes, dados: FormData): Promise<
 
   try {
     await salvarMes(empresa.id, { ...d, monofasico });
-    const entrada = { atividade, faturamento: d.faturamento, folha: d.folha, custos: d.custos, monofasico };
-    await registrarSimulacao(empresa.id, { ...entrada, ano: d.ano, mes: d.mes }, calcular(entrada));
+
+    // A faixa de cada mês depende dos 12 anteriores. Mudar este mês muda a
+    // conta dele e dos 12 meses seguintes que já estiverem lançados — todos
+    // ganham uma simulação nova (as antigas ficam como foram mostradas).
+    const meses = await mesesDaEmpresa(empresa.id);
+    const inicio = comparar(d, { ano: 0, mes: 1 });
+    const afetados = meses.filter((m) => {
+      const distancia = comparar(m, { ano: 0, mes: 1 }) - inicio;
+      return distancia >= 0 && distancia <= 12;
+    });
+    await registrarSimulacoes(
+      empresa.id,
+      afetados.map((m) => {
+        const entrada = { atividade, faturamento: m.faturamento, folha: m.folha, custos: m.custos, monofasico: m.monofasico };
+        return {
+          entrada: { ...entrada, ano: m.ano, mes: m.mes },
+          resultado: calcular(entrada, undefined, historico12(meses, m)),
+        };
+      }),
+    );
   } catch (erro) {
     console.error(erro);
     return { erro: "Não consegui salvar agora. Tente de novo em instantes." };

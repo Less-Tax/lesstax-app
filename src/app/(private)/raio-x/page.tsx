@@ -5,12 +5,13 @@ import { SeletorMes } from "@/components/navegacao/seletor-mes";
 import { Cartao } from "@/components/raiox/cartao";
 import { Numero, Principal } from "@/components/raiox/destaques";
 import { Evolucao, type PontoEvolucao } from "@/components/raiox/evolucao";
+import { Receita12 } from "@/components/raiox/receita-12";
 import { RoscaRaioX } from "@/components/raiox/rosca";
 import { chave, lerChave, mesAtual } from "@/lib/competencia";
 import { empresasDoUsuario } from "@/lib/db/empresas";
 import { simulacoesPorMes } from "@/lib/db/simulacoes";
 import { competencia, nomeDoMes, porcento } from "@/lib/formato";
-import { oportunidades, rotuloRegime } from "@/lib/tributario";
+import { mesesQueFaltam, oportunidades, rotuloRegime } from "@/lib/tributario";
 
 export const metadata = { title: "Raio-X — Less Tax" };
 
@@ -53,6 +54,7 @@ export default async function RaioX({ searchParams }: { searchParams: Promise<{ 
   }));
 
   const aliquota = resultado.imposto / entrada.faturamento;
+  const lancados = simulacoes.map((s) => ({ ...s.entrada }));
   const nomeMes = nomeDoMes(entrada.mes);
 
   return (
@@ -128,6 +130,13 @@ export default async function RaioX({ searchParams }: { searchParams: Promise<{ 
               negativoEmDestaque
             />
           </div>
+
+          <Receita12
+            rbt12={resultado.rbt12}
+            origem={resultado.origemRbt12}
+            mes={entrada.mes}
+            proximoParaLancar={mesesQueFaltam(lancados, entrada)[0] ?? null}
+          />
 
           <section className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-4 sm:p-5">
             <h2 className="font-display text-lg font-bold">Mês a mês</h2>

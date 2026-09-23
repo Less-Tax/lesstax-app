@@ -64,3 +64,21 @@ export async function simulacoesPorMes(empresaId: string): Promise<Simulacao[]> 
     (a, b) => a.entrada.ano * 12 + a.entrada.mes - (b.entrada.ano * 12 + b.entrada.mes),
   );
 }
+
+/** Várias simulações de uma vez (um único insert). */
+export async function registrarSimulacoes(
+  empresaId: string,
+  lista: { entrada: EntradaGuardada; resultado: Resultado }[],
+) {
+  if (lista.length === 0) return;
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.from("simulacoes").insert(
+    lista.map(({ entrada, resultado }) => ({
+      empresa_id: empresaId,
+      entrada,
+      resultado,
+      regras_versao: resultado.regrasVersao,
+    })),
+  );
+  if (error) throw new Error(`[simulacoes] registrar: ${error.message}`);
+}

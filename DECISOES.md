@@ -186,3 +186,21 @@ mês ("dos R$ 100.000 de agosto") é o que o empresário entende de primeira, e 
 porcentagem já aparece ao lado de cada parte. A caixinha que aparecia ao passar
 o mouse tapava o número do meio; agora passar o mouse numa fatia ou na legenda
 troca o próprio número do meio.
+
+## 2026-09-23 — Receita de 12 meses (RBT12) pelo histórico lançado
+
+A faixa da tabela e o Fator R passam a usar os 12 meses ANTERIORES ao mês
+calculado, como a Receita faz — antes era o próprio mês × 12, que errava muito
+em empresa com meses fortes e fracos.
+
+- 12 meses lançados: soma exata.
+- Parte deles: média dos lançados × 12 (é também a regra da LC 123, art. 18,
+  § 2º, para empresa com menos de 12 meses).
+- Nenhum anterior: o próprio mês × 12.
+
+O resultado guarda `origemRbt12`, e o Raio-X avisa quando é estimativa e qual
+mês lançar para chegar no valor exato.
+
+Como cada mês depende dos 12 anteriores, salvar um mês recalcula ele e os 12
+seguintes que já existirem — cada um ganha uma simulação nova; as antigas
+continuam como foram mostradas.

@@ -90,7 +90,11 @@ export function oportunidades(ctx: Contexto): Cartao[] {
   // --- Fator R: serviços técnicos entre o Anexo III e o V.
   if (entrada.atividade === "profissionais") {
     if (r.anexo === "V") {
-      const aumento = FATOR_R_MINIMO * entrada.faturamento - entrada.folha;
+      // O Fator R é apurado em 12 meses: o aumento é o que falta na folha de
+      // 12 meses para chegar a 28%, espalhado por mês. Simulações antigas não
+      // têm folha12; nelas a estimativa era a folha do mês × 12.
+      const folha12 = r.folha12 ?? entrada.folha * 12;
+      const aumento = (FATOR_R_MINIMO * r.rbt12 - folha12) / 12;
       const impostoNoIII = entrada.faturamento * aliquotaEfetiva(r.rbt12, TABELAS[r.regrasVersao].III);
       const economia = r.imposto - impostoNoIII - aumento * INSS_SOBRE_PRO_LABORE;
       if (economia > 0) {

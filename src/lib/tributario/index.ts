@@ -10,3 +10,6 @@ export type { Atividade, Anexo, Entrada, Resultado, Faixa } from "./tipos";
 export { oportunidades, manchete, rotuloRegime, PRAZO_REFORMA } from "./oportunidades";
 export type { Cartao, Tom, Contexto } from "./oportunidades";
 export { reais, porcento } from "./formato";
+export { historico12, mesesQueFaltam } from "./historico";
+export type { MesLancado } from "./historico";
+export type { Historico12, OrigemRbt12 } from "./tipos";
