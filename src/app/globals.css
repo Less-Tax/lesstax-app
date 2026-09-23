@@ -90,3 +90,15 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Gráficos: o clique do mouse não desenha contorno; o Tab do teclado ainda desenha. */
+.recharts-wrapper :focus:not(:focus-visible),
+.recharts-surface:focus:not(:focus-visible) {
+  outline: none;
+}
+.recharts-wrapper :focus-visible,
+.recharts-surface:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
