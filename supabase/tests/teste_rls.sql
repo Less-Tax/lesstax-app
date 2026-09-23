@@ -143,6 +143,21 @@ end;
 $$;
 reset role;
 
+-- 10. A Ana, dona da empresa verificada, não troca o CNPJ pelo app.
+set role authenticated;
+set request.jwt.claims = '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
+do $$
+begin
+  begin
+    update public.empresas set cnpj = '11222333000181' where nome = 'Original da Ana';
+    insert into resultados values (10, 'FALHOU 10. empresa verificada trocou de CNPJ');
+  exception when insufficient_privilege then
+    insert into resultados values (10, 'OK     10. empresa verificada não troca o CNPJ sozinha');
+  end;
+end;
+$$;
+reset role;
+
 -- ------------------------------------------------------------------ limpeza
 reset role;
 reset request.jwt.claims;
@@ -154,5 +169,5 @@ delete from public.leads    where nome = 'Lead de teste';
 delete from public.perfis   where id in ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222');
 delete from auth.users      where id in ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222');
 
--- O resultado: as nove linhas precisam começar com OK.
+-- O resultado: as dez linhas precisam começar com OK.
 select resultado from resultados order by ordem;

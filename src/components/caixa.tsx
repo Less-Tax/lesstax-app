@@ -14,7 +14,7 @@ export function Caixa({
         name={id}
         type="checkbox"
         defaultChecked={marcadoPorPadrao}
-        className="size-4 accent-emerald-700"
+        className="size-4 accent-primary"
       />
       {rotulo}
     </label>

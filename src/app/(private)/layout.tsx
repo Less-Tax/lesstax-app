@@ -27,7 +27,8 @@ export default async function LayoutPrivado({
           <div className="hidden md:block">
             <Abas />
           </div>
-          <form action={sair}>
+          {/* No celular, o Sair fica na aba Conta */}
+          <form action={sair} className="hidden md:block">
             <button type="submit" className="text-sm text-muted-foreground hover:text-foreground">
               Sair
             </button>

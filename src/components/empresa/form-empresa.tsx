@@ -1,13 +1,14 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
+import { BadgeCheck, CheckCircle2 } from "lucide-react";
 import type { EmpresaReceita } from "@/lib/integracoes/brasilapi";
 import { cnpjValido, mascaraCnpj, soDigitos } from "@/lib/validacao/cnpj";
 import { ATIVIDADES, CLIENTES } from "@/lib/validacao/empresa";
-import { buscarCnpj, salvarEmpresa } from "./acoes";
+import { buscarCnpj, type EstadoEmpresa } from "@/app/(private)/empresa/acoes";
 
 const caixa =
-  "w-full rounded-lg border border-black/15 bg-white px-3.5 py-2.5 text-base outline-none focus-visible:ring-3 focus-visible:ring-emerald-600/40 dark:border-white/20 dark:bg-white/5";
+  "w-full rounded-lg border border-border bg-card px-3.5 py-2.5 text-base outline-none focus-visible:ring-3 focus-visible:ring-ring/40 disabled:bg-card-muted disabled:text-muted-foreground";
 
 function Opcoes<T extends string>({
   nome,
@@ -37,7 +38,7 @@ function Opcoes<T extends string>({
             type="button"
             aria-pressed={valor === chave}
             onClick={() => aoEscolher(chave)}
-            className="rounded-lg border border-black/15 px-2 py-2.5 text-sm aria-pressed:border-emerald-600 aria-pressed:bg-emerald-600/10 aria-pressed:font-semibold aria-pressed:text-emerald-700 dark:border-white/20 dark:aria-pressed:text-emerald-400"
+            className="rounded-lg border border-border bg-card px-2 py-2.5 text-sm aria-pressed:border-primary aria-pressed:bg-primary-soft aria-pressed:font-semibold aria-pressed:text-primary"
           >
             {texto}
           </button>
@@ -58,18 +59,62 @@ const cnaeTexto = (codigo: number) => {
   return `${d.slice(0, 4)}-${d[4]}/${d.slice(5)}`;
 };
 
-export function FormEmpresa() {
-  const [estado, enviar, enviando] = useActionState(salvarEmpresa, {});
+/** O que já está salvo, quando o formulário é de edição. */
+export type EmpresaSalva = {
+  cnpj: string | null;
+  nome: string;
+  atividade: string;
+  clientes: string | null;
+  funcionarios: number | null;
+  verificada: boolean;
+  cnpjRemovido: boolean;
+  receita: {
+    razaoSocial: string | null;
+    porte: string | null;
+    regime: string | null;
+    municipio: string | null;
+    uf: string | null;
+    cnae: string | null;
+  } | null;
+};
+
+type Acao = (anterior: EstadoEmpresa, dados: FormData) => Promise<EstadoEmpresa>;
+
+const PORTE: Record<string, string> = { ME: "Microempresa", EPP: "Empresa de Pequeno Porte", DEMAIS: "Acima do porte EPP" };
+const REGIME: Record<string, string> = {
+  mei: "MEI",
+  simples: "Simples Nacional",
+  lucro_real: "Lucro Real",
+  lucro_presumido: "Lucro Presumido",
+  fora: "Fora do Simples",
+};
+
+const eAtividade = (v: string | null | undefined): v is keyof typeof ATIVIDADES => !!v && v in ATIVIDADES;
+const eCliente = (v: string | null | undefined): v is keyof typeof CLIENTES => !!v && v in CLIENTES;
+
+/**
+ * Formulário da empresa. Sem `salva`, cadastra; com `salva`, edita.
+ * Na edição de uma empresa verificada, o CNPJ fica travado.
+ */
+export function FormEmpresa({ acao, salva, botao = "Continuar" }: { acao: Acao; salva?: EmpresaSalva; botao?: string }) {
+  const [estado, enviar, enviando] = useActionState(acao, {});
   const [buscando, iniciarBusca] = useTransition();
 
-  const [cnpj, setCnpj] = useState("");
+  const cnpjSalvo = salva?.cnpj ? mascaraCnpj(salva.cnpj) : "";
+  const travado = !!salva?.verificada;
+
+  const [cnpj, setCnpj] = useState(cnpjSalvo);
   const [receita, setReceita] = useState<EmpresaReceita | null>(null);
   const [avisoBusca, setAvisoBusca] = useState("");
-  const [nome, setNome] = useState("");
-  const [nomeDigitado, setNomeDigitado] = useState(false);
-  const [atividade, setAtividade] = useState<keyof typeof ATIVIDADES | "">("");
-  const [clientes, setClientes] = useState<keyof typeof CLIENTES | "">("");
-  const [funcionarios, setFuncionarios] = useState("");
+  const [nome, setNome] = useState(salva?.nome ?? "");
+  const [nomeDigitado, setNomeDigitado] = useState(!!salva);
+  const [atividade, setAtividade] = useState<keyof typeof ATIVIDADES | "">(eAtividade(salva?.atividade) ? salva.atividade : "");
+  const [clientes, setClientes] = useState<keyof typeof CLIENTES | "">(eCliente(salva?.clientes) ? salva.clientes : "");
+  const [funcionarios, setFuncionarios] = useState(salva?.funcionarios != null ? String(salva.funcionarios) : "");
+
+  // Enquanto o CNPJ for o mesmo que está salvo, vale o cartão com os dados guardados.
+  const mostrarSalvo = !!salva?.receita?.razaoSocial && !receita && soDigitos(cnpj) === soDigitos(cnpjSalvo) && cnpj !== "";
+  const mudouAtividade = !!salva && atividade !== salva.atividade;
 
   function consultar(valor: string) {
     if (!cnpjValido(valor)) {
@@ -106,7 +151,7 @@ export function FormEmpresa() {
       {/* CNPJ */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="cnpj" className="text-sm font-semibold">
-          CNPJ <span className="font-normal text-black/50 dark:text-white/50">(opcional)</span>
+          CNPJ {travado ? null : <span className="font-normal text-muted-foreground">(opcional)</span>}
         </label>
         <div className="flex gap-2">
           <input
@@ -117,30 +162,64 @@ export function FormEmpresa() {
             placeholder="00.000.000/0000-00"
             value={cnpj}
             onChange={(e) => mudarCnpj(e.target.value)}
-            className={`${caixa} min-w-0 flex-1`}
+            readOnly={travado}
+            aria-readonly={travado}
+            className={`${caixa} min-w-0 flex-1 read-only:bg-card-muted read-only:text-muted-foreground`}
           />
+          {travado ? null : (
           <button
             type="button"
             onClick={() => consultar(cnpj)}
             disabled={buscando}
-            className="shrink-0 rounded-lg border border-emerald-700 px-4 font-semibold text-emerald-700 disabled:opacity-60 dark:border-emerald-400 dark:text-emerald-400"
+            className="shrink-0 rounded-lg border border-primary px-4 font-semibold text-primary disabled:opacity-60"
           >
             {buscando ? "Buscando..." : "Buscar"}
           </button>
+          )}
         </div>
-        <p className="text-xs text-black/55 dark:text-white/55">
-          Com o CNPJ, a gente preenche o nome e o ramo sozinho. Se preferir, pule e preencha à mão.
-        </p>
+        {travado ? (
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+            <BadgeCheck className="size-4" aria-hidden="true" />
+            Empresa verificada. Para trocar o CNPJ, fale com a equipe da Less Tax.
+          </p>
+        ) : salva?.cnpjRemovido && !cnpj ? (
+          <p className="text-xs text-muted-foreground">
+            O CNPJ desta empresa foi confirmado por outra conta e saiu daqui. Seus números continuam salvos.
+          </p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            {salva
+              ? "Trocou de CNPJ? Digite o novo e a gente atualiza os dados da Receita."
+              : "Com o CNPJ, a gente preenche o nome e o ramo sozinho. Se preferir, pule e preencha à mão."}
+          </p>
+        )}
         {avisoBusca ? (
-          <p role="status" className="text-xs text-red-600 dark:text-red-400">
+          <p role="status" className="text-xs text-destructive">
             {avisoBusca}
           </p>
         ) : null}
       </div>
 
+      {/* Cartão com o que está guardado da Receita (edição) */}
+      {mostrarSalvo && salva?.receita ? (
+        <div className="flex flex-col gap-1 rounded-xl border-l-4 border-primary bg-card-muted p-3.5 text-sm">
+          <b>{salva.receita.razaoSocial}</b>
+          <p>
+            {[
+              salva.receita.porte ? PORTE[salva.receita.porte] ?? salva.receita.porte : null,
+              salva.receita.regime ? REGIME[salva.receita.regime] ?? null : null,
+              [salva.receita.municipio, salva.receita.uf].filter(Boolean).join("/"),
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </p>
+          {salva.receita.cnae ? <p className="text-xs text-muted-foreground">{salva.receita.cnae}</p> : null}
+        </div>
+      ) : null}
+
       {/* Cartão com o que veio da Receita */}
       {receita ? (
-        <div role="status" className="flex flex-col gap-1 rounded-xl border-l-4 border-emerald-600 bg-black/[0.03] p-3.5 text-sm dark:bg-white/5">
+        <div role="status" className="flex flex-col gap-1 rounded-xl border-l-4 border-primary bg-card-muted p-3.5 text-sm">
           <b>{receita.razaoSocial}</b>
           <p>
             {[
@@ -152,12 +231,12 @@ export function FormEmpresa() {
               .join(" · ")}
           </p>
           {receita.cnae ? (
-            <p className="text-xs text-black/55 dark:text-white/55">
+            <p className="text-xs text-muted-foreground">
               CNAE {cnaeTexto(receita.cnae.codigo)} — {receita.cnae.descricao}
             </p>
           ) : null}
           {receita.atividadeSugerida ? (
-            <p className="text-xs text-black/55 dark:text-white/55">
+            <p className="text-xs text-muted-foreground">
               Marcamos &quot;{ATIVIDADES[receita.atividadeSugerida]}&quot; pelo CNAE. Se não for isso, troque abaixo.
             </p>
           ) : null}
@@ -196,9 +275,14 @@ export function FormEmpresa() {
       </div>
 
       <Opcoes nome="atividade" rotulo="O que a empresa faz?" opcoes={ATIVIDADES} valor={atividade} aoEscolher={setAtividade} />
-      <p className="-mt-3 text-xs text-black/55 dark:text-white/55">
+      <p className="-mt-3 text-xs text-muted-foreground">
         Serviços técnicos: tecnologia, consultoria, marketing, saúde, engenharia e parecidos.
       </p>
+      {mudouAtividade ? (
+        <p role="status" className="-mt-2 rounded-lg bg-imposto-soft px-3 py-2 text-xs">
+          Mudar a atividade muda a conta do imposto. Ao salvar, refazemos as contas de todos os meses lançados.
+        </p>
+      ) : null}
 
       <Opcoes nome="clientes" rotulo="Para quem mais vende?" opcoes={CLIENTES} valor={clientes} aoEscolher={setClientes} colunas={3} />
 
@@ -218,21 +302,28 @@ export function FormEmpresa() {
           onChange={(e) => setFuncionarios(e.target.value)}
           className={caixa}
         />
-        <p className="text-xs text-black/55 dark:text-white/55">Contando você e os sócios.</p>
+        <p className="text-xs text-muted-foreground">Contando você e os sócios.</p>
       </div>
 
       {estado.erro ? (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+        <p role="alert" className="text-sm text-destructive">
           {estado.erro}
+        </p>
+      ) : null}
+
+      {estado.ok ? (
+        <p role="status" className="flex items-center gap-2 text-sm font-semibold text-primary">
+          <CheckCircle2 className="size-4 shrink-0" aria-hidden="true" />
+          {estado.ok}
         </p>
       ) : null}
 
       <button
         type="submit"
         disabled={enviando}
-        className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white disabled:opacity-60"
+        className="rounded-xl bg-primary px-4 py-3 font-semibold text-primary-foreground disabled:opacity-60"
       >
-        {enviando ? "Salvando..." : "Continuar"}
+        {enviando ? "Salvando..." : botao}
       </button>
     </form>
   );

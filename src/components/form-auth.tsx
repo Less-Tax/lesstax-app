@@ -19,12 +19,12 @@ export function FormAuth({
       {children}
 
       {estado.erro ? (
-        <p role="alert" className="text-sm text-red-600 dark:text-red-400">
+        <p role="alert" className="text-sm text-destructive">
           {estado.erro}
         </p>
       ) : null}
       {estado.aviso ? (
-        <p role="status" className="text-sm text-emerald-700 dark:text-emerald-400">
+        <p role="status" className="text-sm text-primary">
           {estado.aviso}
         </p>
       ) : null}
@@ -32,7 +32,7 @@ export function FormAuth({
       <button
         type="submit"
         disabled={enviando}
-        className="rounded-xl bg-emerald-700 px-4 py-3 font-semibold text-white disabled:opacity-60"
+        className="rounded-xl bg-primary px-4 py-3 font-semibold text-primary-foreground disabled:opacity-60"
       >
         {enviando ? "Um instante..." : botao}
       </button>

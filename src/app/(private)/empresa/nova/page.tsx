@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { empresasDoUsuario } from "@/lib/db/empresas";
-import { FormEmpresa } from "./form-empresa";
+import { FormEmpresa } from "@/components/empresa/form-empresa";
+import { salvarEmpresa } from "../acoes";
 
 export const metadata = { title: "Sua empresa — Less Tax" };
 
@@ -14,11 +15,11 @@ export default async function NovaEmpresa() {
     <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-center gap-6 px-4 py-10">
       <div>
         <h1 className="text-2xl font-bold">Conte sobre a sua empresa</h1>
-        <p className="mt-1 text-sm text-black/60 dark:text-white/60">
+        <p className="mt-1 text-sm text-muted-foreground">
           Só o básico. Os números do mês vêm no próximo passo.
         </p>
       </div>
-      <FormEmpresa />
+      <FormEmpresa acao={salvarEmpresa} />
     </main>
   );
 }

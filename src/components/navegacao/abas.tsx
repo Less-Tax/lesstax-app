@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, Gauge } from "lucide-react";
+import { CalendarDays, Gauge, UserRound } from "lucide-react";
 
 const ABAS = [
   { href: "/raio-x", rotulo: "Raio-X", Icone: Gauge },
   { href: "/meses", rotulo: "Meses", Icone: CalendarDays },
+  { href: "/conta", rotulo: "Conta", Icone: UserRound },
 ];
 
 /**

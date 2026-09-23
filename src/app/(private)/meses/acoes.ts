@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { usuarioAtual } from "@/lib/auth/usuario";
 import { chave, comparar, mesAtual } from "@/lib/competencia";
 import { empresasDoUsuario } from "@/lib/db/empresas";
-import { mesesDaEmpresa, salvarMes } from "@/lib/db/meses";
-import { registrarSimulacoes } from "@/lib/db/simulacoes";
-import { calcular, historico12, type Atividade } from "@/lib/tributario";
+import { salvarMes } from "@/lib/db/meses";
+import { recalcularMeses } from "@/lib/db/recalcular";
+import type { Atividade } from "@/lib/tributario";
 import { esquemaMes } from "@/lib/validacao/mes";
 
 export type EstadoMes = { erro?: string };
@@ -42,25 +42,9 @@ export async function lancarMes(_anterior: EstadoMes, dados: FormData): Promise<
   try {
     await salvarMes(empresa.id, { ...d, monofasico });
 
-    // A faixa de cada mês depende dos 12 anteriores. Mudar este mês muda a
-    // conta dele e dos 12 meses seguintes que já estiverem lançados — todos
-    // ganham uma simulação nova (as antigas ficam como foram mostradas).
-    const meses = await mesesDaEmpresa(empresa.id);
-    const inicio = comparar(d, { ano: 0, mes: 1 });
-    const afetados = meses.filter((m) => {
-      const distancia = comparar(m, { ano: 0, mes: 1 }) - inicio;
-      return distancia >= 0 && distancia <= 12;
-    });
-    await registrarSimulacoes(
-      empresa.id,
-      afetados.map((m) => {
-        const entrada = { atividade, faturamento: m.faturamento, folha: m.folha, custos: m.custos, monofasico: m.monofasico };
-        return {
-          entrada: { ...entrada, ano: m.ano, mes: m.mes },
-          resultado: calcular(entrada, undefined, historico12(meses, m)),
-        };
-      }),
-    );
+    // A faixa de cada mês depende dos 12 anteriores: este mês e os 12
+    // seguintes que já estiverem lançados ganham uma simulação nova.
+    await recalcularMeses(empresa.id, atividade, d);
   } catch (erro) {
     console.error(erro);
     return { erro: "Não consegui salvar agora. Tente de novo em instantes." };

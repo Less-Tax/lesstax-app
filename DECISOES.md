@@ -204,3 +204,16 @@ mês lançar para chegar no valor exato.
 Como cada mês depende dos 12 anteriores, salvar um mês recalcula ele e os 12
 seguintes que já existirem — cada um ganha uma simulação nova; as antigas
 continuam como foram mostradas.
+
+## 2026-09-23 — Tela Conta: editar empresa, dados e senha
+
+- A empresa editada é sempre a do usuário, lida no servidor. O formulário não
+  manda id.
+- Empresa verificada não troca o CNPJ: a tela trava o campo e o banco barra
+  (`proteger_verificacao`). Só a equipe troca.
+- CNPJ igual ao salvo mantém os dados da Receita. CNPJ novo consulta de novo
+  no servidor; CNPJ apagado limpa esses dados.
+- Mudar a atividade muda o anexo do Simples, então todos os meses lançados
+  ganham uma simulação nova.
+- Trocar a senha pede a senha atual. E-mail não se troca pelo app por
+  enquanto: depende do envio de e-mails (limite de 2 por hora sem SMTP).

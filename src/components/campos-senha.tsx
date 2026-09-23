@@ -4,15 +4,15 @@ import { useState } from "react";
 import { REGRAS_SENHA, forcaDaSenha } from "@/lib/validacao/auth";
 
 const NIVEIS = [
-  { rotulo: "muito fraca", cor: "bg-red-500", texto: "text-red-600 dark:text-red-400" },
-  { rotulo: "fraca", cor: "bg-red-500", texto: "text-red-600 dark:text-red-400" },
+  { rotulo: "muito fraca", cor: "bg-red-500", texto: "text-destructive" },
+  { rotulo: "fraca", cor: "bg-red-500", texto: "text-destructive" },
   { rotulo: "razoável", cor: "bg-amber-500", texto: "text-amber-600 dark:text-amber-400" },
   { rotulo: "boa", cor: "bg-amber-500", texto: "text-amber-600 dark:text-amber-400" },
-  { rotulo: "forte", cor: "bg-emerald-600", texto: "text-emerald-700 dark:text-emerald-400" },
+  { rotulo: "forte", cor: "bg-primary", texto: "text-primary" },
 ];
 
 const caixa =
-  "w-full rounded-lg border border-black/15 bg-white px-3.5 py-2.5 text-base outline-none focus-visible:ring-3 focus-visible:ring-emerald-600/40 dark:border-white/20 dark:bg-white/5";
+  "w-full rounded-lg border border-border bg-card px-3.5 py-2.5 text-base outline-none focus-visible:ring-3 focus-visible:ring-ring/40";
 
 export function CamposSenha({ rotulo = "Senha" }: { rotulo?: string }) {
   const [senha, setSenha] = useState("");
@@ -46,7 +46,7 @@ export function CamposSenha({ rotulo = "Senha" }: { rotulo?: string }) {
               {[0, 1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className={`h-full flex-1 rounded-full ${i < forca ? nivel.cor : "bg-black/10 dark:bg-white/15"}`}
+                  className={`h-full flex-1 rounded-full ${i < forca ? nivel.cor : "bg-border"}`}
                 />
               ))}
             </div>
@@ -61,7 +61,7 @@ export function CamposSenha({ rotulo = "Senha" }: { rotulo?: string }) {
               <li
                 key={regra.id}
                 className={`flex items-center gap-1.5 text-xs ${
-                  ok ? "text-emerald-700 dark:text-emerald-400" : "text-black/50 dark:text-white/50"
+                  ok ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 <span aria-hidden="true">{ok ? "✓" : "○"}</span>
@@ -89,7 +89,7 @@ export function CamposSenha({ rotulo = "Senha" }: { rotulo?: string }) {
           aria-invalid={diferentes}
         />
         {diferentes ? (
-          <p className="text-xs text-red-600 dark:text-red-400">As duas senhas não são iguais.</p>
+          <p className="text-xs text-destructive">As duas senhas não são iguais.</p>
         ) : null}
       </div>
     </>
