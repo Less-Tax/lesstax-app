@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CalendarPlus } from "lucide-react";
+import { Passos } from "@/components/boas-vindas/passos";
 import { SeletorMes } from "@/components/navegacao/seletor-mes";
 import { Cartao } from "@/components/raiox/cartao";
 import { Numero, Principal } from "@/components/raiox/destaques";
 import { Evolucao, type PontoEvolucao } from "@/components/raiox/evolucao";
 import { Receita12 } from "@/components/raiox/receita-12";
 import { RoscaRaioX } from "@/components/raiox/rosca";
-import { chave, lerChave, mesAtual } from "@/lib/competencia";
+import { chave, lerChave, mesAtual, somar } from "@/lib/competencia";
 import { empresasDoUsuario } from "@/lib/db/empresas";
 import { simulacoesPorMes } from "@/lib/db/simulacoes";
 import { competencia, nomeDoMes, porcento } from "@/lib/formato";
@@ -17,7 +18,7 @@ export const metadata = { title: "Raio-X — Less Tax" };
 
 const curto = (ano: number, mes: number) => `${nomeDoMes(mes).slice(0, 3)}/${String(ano).slice(2)}`;
 
-export default async function RaioX({ searchParams }: { searchParams: Promise<{ mes?: string }> }) {
+export default async function RaioX({ searchParams }: { searchParams: Promise<{ mes?: string; primeiro?: string }> }) {
   const [empresa] = await empresasDoUsuario();
   if (!empresa) redirect("/empresa/nova");
 
@@ -26,7 +27,8 @@ export default async function RaioX({ searchParams }: { searchParams: Promise<{ 
   const simulacoes = await simulacoesPorMes(empresa.id);
   if (simulacoes.length === 0) redirect("/meses");
 
-  const pedido = lerChave((await searchParams).mes);
+  const parametros = await searchParams;
+  const pedido = lerChave(parametros.mes);
   const indice = pedido ? simulacoes.findIndex((s) => chave(s.entrada) === chave(pedido)) : -1;
   const i = indice >= 0 ? indice : simulacoes.length - 1;
 
@@ -91,6 +93,35 @@ export default async function RaioX({ searchParams }: { searchParams: Promise<{ 
           }
         />
       </div>
+
+      {parametros.primeiro && simulacoes.length === 1 ? (
+        <section
+          aria-labelledby="titulo-primeiro"
+          className="flex flex-col gap-4 rounded-2xl border border-primary/40 bg-primary-soft p-4 sm:p-5"
+        >
+          <Passos atual={3} />
+          <div>
+            <h2 id="titulo-primeiro" className="font-display text-xl font-bold">
+              Seu primeiro Raio-X está pronto
+            </h2>
+            <p className="text-sm">
+              Com um mês só, a receita de 12 meses é estimada. Cada mês anterior que você lançar deixa a conta mais
+              perto da que a Receita faz.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/meses?mes=${chave(somar(entrada, -1))}`}
+              className="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+            >
+              Lançar {nomeDoMes(somar(entrada, -1).mes)}
+            </Link>
+            <Link href="/lessy" className="rounded-xl border border-primary px-4 py-2 text-sm font-semibold text-primary">
+              Perguntar ao Lessy
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       {empresa.cnpj_removido_em && !empresa.cnpj ? (
         <div role="status" className="rounded-2xl border-l-4 border-l-imposto bg-imposto-soft p-4 text-sm">

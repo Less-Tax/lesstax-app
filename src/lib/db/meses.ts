@@ -52,3 +52,10 @@ export async function mesesDaEmpresa(empresaId: string): Promise<Mes[]> {
     monofasico: Number(m.monofasico),
   }));
 }
+
+/** Apaga um mês lançado. A RLS só deixa apagar mês de empresa da qual a pessoa é membro. */
+export async function apagarMes(empresaId: string, ano: number, mes: number) {
+  const supabase = await criarClienteServidor();
+  const { error } = await supabase.from("meses").delete().eq("empresa_id", empresaId).eq("ano", ano).eq("mes", mes);
+  if (error) throw new Error(`[meses] apagar: ${error.message}`);
+}

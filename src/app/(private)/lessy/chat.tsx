@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { ArrowUp, RotateCcw } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowUp, History, RotateCcw } from "lucide-react";
 import { perguntar } from "./acoes";
 
 type Mensagem = { id: string; papel: "user" | "assistant"; conteudo: string };
@@ -39,8 +41,12 @@ function Bolha({ m }: { m: Mensagem }) {
   );
 }
 
+const dataCurta = (iso: string) =>
+  new Date(iso).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "short" });
+
 export function Chat({
   conversaInicial,
+  historico,
   restantesInicial,
   limite,
   gratuito,
@@ -48,6 +54,7 @@ export function Chat({
   sugestoes,
 }: {
   conversaInicial: { id: string; mensagens: Mensagem[] } | null;
+  historico: { id: string; titulo: string; criadaEm: string }[];
   restantesInicial: number;
   limite: number;
   gratuito: boolean;
@@ -62,6 +69,7 @@ export function Chat({
   const [pensando, iniciar] = useTransition();
   const fim = useRef<HTMLDivElement>(null);
   const contador = useRef(0);
+  const router = useRouter();
 
   // Mensagem nova: rola até o fim.
   useEffect(() => {
@@ -90,14 +98,11 @@ export function Chat({
       }
       setConversaId(r.conversaId);
       setMensagens((atual) => [...atual, { id: `${provisoria.id}-r`, papel: "assistant", conteudo: r.resposta }]);
+      router.refresh(); // atualiza a lista de conversas
+
     });
   }
 
-  function novaConversa() {
-    setConversaId(null);
-    setMensagens([]);
-    setErro("");
-  }
 
   return (
     <>
@@ -116,18 +121,41 @@ export function Chat({
             {restantes} de {limite} {limite === 1 ? "pergunta" : "perguntas"} em {mes}
           </span>
           {mensagens.length > 0 ? (
-            <button
-              type="button"
-              onClick={novaConversa}
-              disabled={pensando}
-              className="flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold disabled:opacity-60"
+            <Link
+              href="/lessy?nova=1"
+              aria-disabled={pensando}
+              className="flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold aria-disabled:pointer-events-none aria-disabled:opacity-60"
             >
               <RotateCcw className="size-3.5" aria-hidden="true" />
               Nova conversa
-            </button>
+            </Link>
           ) : null}
         </div>
       </div>
+
+      {historico.length > 0 ? (
+        <details className="group rounded-2xl border border-border bg-card">
+          <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-2.5 text-sm font-semibold">
+            <History className="size-4 text-muted-foreground" aria-hidden="true" />
+            Conversas anteriores
+            <span className="text-muted-foreground">({historico.length})</span>
+          </summary>
+          <ul className="rolagem-fina max-h-64 overflow-y-auto border-t border-border">
+            {historico.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={`/lessy?conversa=${c.id}`}
+                  aria-current={c.id === conversaId ? "true" : undefined}
+                  className="flex items-baseline justify-between gap-3 px-4 py-2 text-sm hover:bg-card-muted aria-[current=true]:bg-primary-soft"
+                >
+                  <span className="truncate">{c.titulo}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{dataCurta(c.criadaEm)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
 
       <section aria-label="Conversa com o Lessy" className="flex flex-1 flex-col gap-4">
         {mensagens.length === 0 ? (

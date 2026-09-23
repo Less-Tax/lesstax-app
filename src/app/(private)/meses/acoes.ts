@@ -2,12 +2,13 @@
 
 import { redirect } from "next/navigation";
 import { usuarioAtual } from "@/lib/auth/usuario";
-import { chave, comparar, mesAtual } from "@/lib/competencia";
+import { chave, comparar, mesAtual, somar } from "@/lib/competencia";
 import { empresasDoUsuario } from "@/lib/db/empresas";
-import { salvarMes } from "@/lib/db/meses";
+import { apagarMes, mesesDaEmpresa, salvarMes } from "@/lib/db/meses";
 import { recalcularMeses } from "@/lib/db/recalcular";
 import type { Atividade } from "@/lib/tributario";
 import { esquemaMes } from "@/lib/validacao/mes";
+import { z } from "zod";
 
 export type EstadoMes = { erro?: string };
 
@@ -39,7 +40,9 @@ export async function lancarMes(_anterior: EstadoMes, dados: FormData): Promise<
   // Monofásico só existe no comércio; nos outros ramos grava zero.
   const monofasico = atividade === "comercio" ? d.monofasico : 0;
 
+  let primeiro = false;
   try {
+    primeiro = (await mesesDaEmpresa(empresa.id)).length === 0;
     await salvarMes(empresa.id, { ...d, monofasico });
 
     // A faixa de cada mês depende dos 12 anteriores: este mês e os 12
@@ -50,5 +53,35 @@ export async function lancarMes(_anterior: EstadoMes, dados: FormData): Promise<
     return { erro: "Não consegui salvar agora. Tente de novo em instantes." };
   }
 
+  // Primeiro mês lançado: o primeiro acesso termina no Raio-X.
+  if (primeiro) redirect(`/raio-x?mes=${chave(d)}&primeiro=1`);
   redirect(`/meses?mes=${chave(d)}&salvo=1`);
+}
+
+const esquemaCompetencia = z.object({
+  ano: z.coerce.number().int().min(2000).max(2100),
+  mes: z.coerce.number().int().min(1).max(12),
+});
+
+export async function removerMes(_anterior: EstadoMes, dados: FormData): Promise<EstadoMes> {
+  const usuario = await usuarioAtual();
+  if (!usuario) redirect("/entrar");
+  const [empresa] = await empresasDoUsuario();
+  if (!empresa) redirect("/empresa/nova");
+
+  const lido = esquemaCompetencia.safeParse({ ano: dados.get("ano"), mes: dados.get("mes") });
+  if (!lido.success) return { erro: "Mês inválido." };
+  const d = lido.data;
+
+  const atividade = empresa.atividade as Atividade;
+  try {
+    await apagarMes(empresa.id, d.ano, d.mes);
+    // Os 12 meses seguintes usavam este na receita de 12 meses: refaz as contas deles.
+    if (ATIVIDADES.includes(atividade)) await recalcularMeses(empresa.id, atividade, somar(d, 1));
+  } catch (erro) {
+    console.error(erro);
+    return { erro: "Não consegui apagar agora. Tente de novo em instantes." };
+  }
+
+  redirect(`/meses?mes=${chave(d)}&apagado=1`);
 }

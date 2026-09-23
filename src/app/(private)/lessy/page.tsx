@@ -3,24 +3,26 @@ import { usuarioAtual } from "@/lib/auth/usuario";
 import { empresasDoUsuario } from "@/lib/db/empresas";
 import { simulacoesPorMes } from "@/lib/db/simulacoes";
 import { limiteMensal } from "@/lib/lessy/limites";
-import { conversaRecente, planoDe, usoDoMes } from "@/lib/lessy/servidor";
+import { conversaParaAbrir, conversasDe, planoDe, usoDoMes } from "@/lib/lessy/servidor";
 import { sugestoes } from "@/lib/lessy/sugestoes";
 import { nomeDoMes } from "@/lib/formato";
 import { Chat } from "./chat";
 
 export const metadata = { title: "Lessy — Less Tax" };
 
-export default async function Lessy() {
+export default async function Lessy({ searchParams }: { searchParams: Promise<{ conversa?: string; nova?: string }> }) {
+  const parametros = await searchParams;
   const usuario = await usuarioAtual();
   if (!usuario) redirect("/entrar");
   const [empresa] = await empresasDoUsuario();
   if (!empresa) redirect("/empresa/nova");
 
   const agora = new Date();
-  const [plano, usadas, conversa, simulacoes] = await Promise.all([
+  const [plano, usadas, conversa, historico, simulacoes] = await Promise.all([
     planoDe(usuario.id, agora),
     usoDoMes(usuario.id, agora),
-    conversaRecente(empresa.id, usuario.id),
+    parametros.nova ? null : conversaParaAbrir(empresa.id, usuario.id, parametros.conversa),
+    conversasDe(empresa.id, usuario.id),
     simulacoesPorMes(empresa.id),
   ]);
   const limite = limiteMensal(plano);
@@ -30,7 +32,9 @@ export default async function Lessy() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-4 px-4 py-6">
       <Chat
+        key={conversa?.id ?? "nova"}
         conversaInicial={conversa}
+        historico={historico}
         restantesInicial={Math.max(0, limite - usadas)}
         limite={limite}
         gratuito={plano === "gratuito"}

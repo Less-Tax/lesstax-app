@@ -49,20 +49,52 @@ export async function usoDoDia(agora = new Date()) {
 
 export type Mensagem = MensagemHistorico & { id: string };
 
-/** A conversa mais recente da pessoa nesta empresa, com as mensagens. */
-export async function conversaRecente(empresaId: string, perfilId: string) {
+/**
+ * A conversa a abrir: a pedida (se for desta pessoa e empresa) ou a mais
+ * recente. Vem com as mensagens.
+ */
+export async function conversaParaAbrir(empresaId: string, perfilId: string, pedida?: string | null) {
+  let id: string | null = null;
+  if (pedida && /^[0-9a-f-]{36}$/i.test(pedida)) id = await conversaDoUsuario(pedida, empresaId, perfilId);
+
+  if (!id) {
+    const supabase = await criarClienteServidor();
+    const { data, error } = await supabase
+      .from("conversas")
+      .select("id")
+      .eq("empresa_id", empresaId)
+      .eq("perfil_id", perfilId)
+      .order("criada_em", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(`[lessy] conversa: ${error.message}`);
+    id = (data?.id as string | undefined) ?? null;
+  }
+  return id ? { id, mensagens: await mensagensDa(id) } : null;
+}
+
+export type ResumoConversa = { id: string; titulo: string; criadaEm: string };
+
+/** As últimas conversas da pessoa, com a primeira pergunta como título. */
+export async function conversasDe(empresaId: string, perfilId: string, limite = 20): Promise<ResumoConversa[]> {
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase
     .from("conversas")
-    .select("id")
+    .select("id, criada_em, mensagens(conteudo, papel, criada_em)")
     .eq("empresa_id", empresaId)
     .eq("perfil_id", perfilId)
+    .eq("mensagens.papel", "user")
     .order("criada_em", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) throw new Error(`[lessy] conversa: ${error.message}`);
-  if (!data) return null;
-  return { id: data.id as string, mensagens: await mensagensDa(data.id) };
+    .order("criada_em", { referencedTable: "mensagens", ascending: true })
+    .limit(1, { referencedTable: "mensagens" })
+    .limit(limite);
+  if (error) throw new Error(`[lessy] conversas: ${error.message}`);
+  return (data ?? [])
+    .map((c) => {
+      const primeira = (c.mensagens as { conteudo: string }[] | null)?.[0]?.conteudo ?? "";
+      return { id: c.id as string, titulo: primeira.slice(0, 80), criadaEm: c.criada_em as string };
+    })
+    .filter((c) => c.titulo);
 }
 
 /**

@@ -47,17 +47,24 @@ export async function ultimaSimulacao(empresaId: string): Promise<Simulacao | nu
  */
 export async function simulacoesPorMes(empresaId: string): Promise<Simulacao[]> {
   const supabase = await criarClienteServidor();
-  const { data, error } = await supabase
-    .from("simulacoes")
-    .select("id, entrada, resultado, regras_versao, criada_em")
-    .eq("empresa_id", empresaId)
-    .order("criada_em", { ascending: false })
-    .limit(500);
+  const [{ data, error }, lancados] = await Promise.all([
+    supabase
+      .from("simulacoes")
+      .select("id, entrada, resultado, regras_versao, criada_em")
+      .eq("empresa_id", empresaId)
+      .order("criada_em", { ascending: false })
+      .limit(500),
+    supabase.from("meses").select("ano, mes").eq("empresa_id", empresaId),
+  ]);
   if (error) throw new Error(`[simulacoes] listar: ${error.message}`);
+  if (lancados.error) throw new Error(`[simulacoes] meses: ${lancados.error.message}`);
 
+  // Mês apagado some da tela; as simulações dele ficam guardadas no histórico.
+  const existe = new Set((lancados.data ?? []).map((m) => `${m.ano}-${m.mes}`));
   const porMes = new Map<string, Simulacao>();
   for (const s of (data ?? []) as Simulacao[]) {
     const chave = `${s.entrada.ano}-${s.entrada.mes}`;
+    if (!existe.has(chave)) continue;
     if (!porMes.has(chave)) porMes.set(chave, s); // a primeira é a mais nova
   }
   return [...porMes.values()].sort(

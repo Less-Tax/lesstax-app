@@ -45,7 +45,7 @@ export function AcaoVerificacao({ empresaId, verificada }: { empresaId: string; 
         <p>A empresa volta a ser não verificada. As cópias que perderam o CNPJ não o recebem de volta.</p>
         {estadoD.erro ? <p role="alert" className="text-destructive">{estadoD.erro}</p> : null}
         <div className="flex gap-2">
-          <button type="submit" disabled={desfazendo} className={`${botao} bg-destructive text-white`}>
+          <button type="submit" disabled={desfazendo} className={`${botao} bg-destructive text-primary-foreground`}>
             {desfazendo ? "Desfazendo..." : "Confirmar"}
           </button>
           <button type="button" onClick={() => setAberto(false)} className={`${botao} text-muted-foreground`}>

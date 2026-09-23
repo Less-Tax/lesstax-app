@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CheckCircle2, ChevronRight } from "lucide-react";
+import { Passos } from "@/components/boas-vindas/passos";
 import { ListaRolavel } from "@/components/navegacao/lista-rolavel";
 import { SeletorMes } from "@/components/navegacao/seletor-mes";
 import { chave, comparar, lerChave, mesAtual, somar, ultimoMesFechado } from "@/lib/competencia";
@@ -15,7 +16,7 @@ export const metadata = { title: "Meses — Less Tax" };
 export default async function Meses({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string; salvo?: string }>;
+  searchParams: Promise<{ mes?: string; salvo?: string; apagado?: string }>;
 }) {
   const [empresa] = await empresasDoUsuario();
   if (!empresa) redirect("/empresa/nova");
@@ -33,15 +34,35 @@ export default async function Meses({
   const anterior = somar(atual, -1);
   const proximo = somar(atual, 1);
   const nomeAtual = nomeDoMes(atual.mes);
+  const primeiroAcesso = meses.length === 0;
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold">Meses</h1>
-        <p className="text-sm text-muted-foreground">
-          Lance os números de cada mês. Quanto mais meses, mais o Raio-X mostra.
+      {primeiroAcesso ? (
+        <div className="flex flex-col gap-4">
+          <Passos atual={1} />
+          <div>
+            <h1 className="font-display text-2xl font-bold">Agora, o primeiro mês</h1>
+            <p className="text-sm text-muted-foreground">
+              Lance o que entrou e saiu em {nomeAtual}. Valores aproximados bastam — dá para corrigir depois. Com
+              ele, o Raio-X já mostra seu imposto.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div>
+          <h1 className="font-display text-2xl font-bold">Meses</h1>
+          <p className="text-sm text-muted-foreground">
+            Lance os números de cada mês. Quanto mais meses, mais o Raio-X mostra.
+          </p>
+        </div>
+      )}
+
+      {parametros.apagado && !salvo ? (
+        <p role="status" className="rounded-2xl border border-border bg-card p-4 text-sm">
+          {rotuloCompetencia(atual.ano, atual.mes)} apagado. Os meses seguintes tiveram a conta refeita.
         </p>
-      </div>
+      ) : null}
 
       {parametros.salvo ? (
         <div role="status" className="flex flex-col gap-2 rounded-2xl bg-primary-soft p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
@@ -60,7 +81,7 @@ export default async function Meses({
         </div>
       ) : null}
 
-      <div className="grid items-start gap-6 md:grid-cols-[1.3fr_1fr] md:items-stretch">
+      <div className={primeiroAcesso ? "grid max-w-xl gap-6" : "grid items-start gap-6 md:grid-cols-[1.3fr_1fr] md:items-stretch"}>
         {/* O mês escolhido */}
         <section className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-4 sm:p-5">
           <SeletorMes
@@ -77,6 +98,8 @@ export default async function Meses({
           <p className="text-xs text-muted-foreground">Valores aproximados de {nomeAtual} bastam.</p>
         </section>
 
+        {primeiroAcesso ? null : (
+          <>
         {/* Os meses já lançados */}
         {/* No computador, a altura acompanha o cartão do formulário (h-0 + min-h-full)
             e a lista rola por dentro. No celular, a lista tem altura máxima. */}
@@ -127,6 +150,8 @@ export default async function Meses({
             </ListaRolavel>
           )}
         </section>
+          </>
+        )}
       </div>
     </main>
   );

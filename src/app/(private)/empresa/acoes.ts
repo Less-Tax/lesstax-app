@@ -83,7 +83,8 @@ export async function salvarEmpresa(_anterior: EstadoEmpresa, dados: FormData): 
   const criada = await criarEmpresa(usuario.id, lido.data, await receitaDo(lido.data.cnpj));
   if (!criada.ok) return { erro: criada.motivo === "cnpj_verificado" ? ERRO_CNPJ_VERIFICADO : ERRO_FALHA };
 
-  redirect("/inicio");
+  // Passo 2 do primeiro acesso: lançar o primeiro mês.
+  redirect("/meses");
 }
 
 // ---------------------------------------------------------------- edição
