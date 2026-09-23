@@ -59,9 +59,9 @@ describe("contexto da Lessy", () => {
 describe("limites da Lessy", () => {
   it("usa o .env e cai no padrão quando falta ou é inválido", () => {
     expect(limiteMensal("gratuito", {})).toBe(3);
-    expect(limiteMensal("pago", {})).toBe(100);
+    expect(limiteMensal("pago", {})).toBe(50);
     expect(limiteMensal("gratuito", { LESSY_MAX_GRATUITO: "5" })).toBe(5);
-    expect(limiteMensal("pago", { LESSY_MAX_MES_PAGO: "abc" })).toBe(100);
+    expect(limiteMensal("pago", { LESSY_MAX_MES_PAGO: "abc" })).toBe(50);
     expect(limiteDiario({ LESSY_MAX_DIA: "-1" })).toBe(50);
   });
 

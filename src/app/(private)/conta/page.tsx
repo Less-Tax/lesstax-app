@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Building2, KeyRound, LogOut, ShieldCheck, UserRound } from "lucide-react";
+import { Building2, Crown, KeyRound, LogOut, ShieldCheck, UserRound } from "lucide-react";
 import { FormEmpresa } from "@/components/empresa/form-empresa";
 import { SeloVerificada } from "@/components/empresa/selo";
 import { ehAdmin } from "@/lib/admin/acesso";
@@ -8,6 +8,8 @@ import { sair } from "@/lib/auth/acoes";
 import { usuarioAtual } from "@/lib/auth/usuario";
 import { empresasDoUsuario } from "@/lib/db/empresas";
 import { perfilAtual } from "@/lib/db/perfis";
+import { ehPremium, nomeDoPlano, PRECO_PREMIUM } from "@/lib/planos/regras";
+import { planoDe } from "@/lib/planos/servidor";
 import { editarEmpresa } from "../empresa/acoes";
 import { FormDados, FormSenha } from "./forms";
 
@@ -44,7 +46,7 @@ export default async function Conta() {
   const usuario = await usuarioAtual();
   if (!usuario) redirect("/entrar");
 
-  const [[empresa], perfil] = await Promise.all([empresasDoUsuario(), perfilAtual()]);
+  const [[empresa], perfil, plano] = await Promise.all([empresasDoUsuario(), perfilAtual(), planoDe(usuario.id)]);
   if (!empresa) redirect("/empresa/nova");
 
   const verificada = !!empresa.verificada_em;
@@ -66,6 +68,22 @@ export default async function Conta() {
           </Link>
         ) : null}
       </div>
+
+      <Link
+        href="/planos"
+        className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:border-primary sm:p-5"
+      >
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
+          <Crown className="size-5" aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-muted-foreground">Seu plano</p>
+          <p className="font-display text-lg font-bold">{nomeDoPlano(plano)}</p>
+        </div>
+        <span className="text-sm font-semibold text-primary">
+          {ehPremium(plano) ? "Ver o que inclui" : `Conhecer o Premium · ${PRECO_PREMIUM}/mês`}
+        </span>
+      </Link>
 
       <Secao
         id="titulo-empresa"

@@ -7,9 +7,9 @@ const numero = (valor: string | undefined, padrao: number) => {
   return Number.isFinite(n) && n >= 0 ? Math.floor(n) : padrao;
 };
 
-/** Perguntas por mês de cada plano. Os números vêm do .env; sem eles, 3 e 100. */
+/** Perguntas por mês de cada plano. Os números vêm do .env; sem eles, 3 e 50. */
 export function limiteMensal(plano: Plano, env: Record<string, string | undefined> = process.env) {
-  return plano === "gratuito" ? numero(env.LESSY_MAX_GRATUITO, 3) : numero(env.LESSY_MAX_MES_PAGO, 100);
+  return plano === "gratuito" ? numero(env.LESSY_MAX_GRATUITO, 3) : numero(env.LESSY_MAX_MES_PAGO, 50);
 }
 
 /** Teto geral de perguntas por dia, somando todo mundo: protege o orçamento da API. */

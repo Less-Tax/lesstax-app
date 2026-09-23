@@ -256,9 +256,17 @@ export function Chat({
           ) : null}
           {esgotado && !erro ? (
             <p className="px-1 text-sm">
-              {gratuito
-                ? `Você usou as ${limite} perguntas grátis de ${mes}. No mês que vem tem mais.`
-                : "Você chegou ao limite de perguntas deste mês."}
+              {gratuito ? (
+                <>
+                  Você usou as {limite} perguntas grátis de {mes}. No mês que vem tem mais — ou{" "}
+                  <Link href="/planos" className="font-semibold text-primary underline-offset-4 hover:underline">
+                    assine o Premium
+                  </Link>{" "}
+                  para ter 50 por mês.
+                </>
+              ) : (
+                "Você chegou ao limite de perguntas deste mês."
+              )}
             </p>
           ) : null}
           <div className="flex items-end gap-2">

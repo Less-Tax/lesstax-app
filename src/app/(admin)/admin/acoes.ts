@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { exigirAdmin } from "@/lib/admin/acesso";
-import { desfazerVerificacao, verificarEmpresa } from "@/lib/admin/dados";
+import { ativarPremium, desativarPremium, desfazerVerificacao, verificarEmpresa } from "@/lib/admin/dados";
 
 export type EstadoAdmin = { erro?: string; ok?: string };
 
@@ -41,4 +41,34 @@ export async function desfazer(_anterior: EstadoAdmin, dados: FormData): Promise
   }
   revalidatePath("/admin", "layout");
   return { ok: "Verificação desfeita." };
+}
+
+const esquemaPlano = z.object({
+  perfil: z.uuid(),
+  acao: z.enum(["ativar", "desativar"]),
+  dias: z.enum(["30", "365", "sempre"]).default("30"),
+});
+
+export async function mudarPlano(_anterior: EstadoAdmin, dados: FormData): Promise<EstadoAdmin> {
+  const admin = await exigirAdmin();
+  const lido = esquemaPlano.safeParse({
+    perfil: dados.get("perfil"),
+    acao: dados.get("acao"),
+    dias: dados.get("dias") ?? undefined,
+  });
+  if (!lido.success) return { erro: "Dados inválidos." };
+
+  const quem = { id: admin.id, email: admin.email! };
+  try {
+    if (lido.data.acao === "ativar") {
+      await ativarPremium(lido.data.perfil, quem, lido.data.dias === "sempre" ? null : Number(lido.data.dias));
+    } else {
+      await desativarPremium(lido.data.perfil, quem);
+    }
+  } catch (erro) {
+    console.error(erro);
+    return { erro: "Não consegui mudar o plano. Veja o log do servidor." };
+  }
+  revalidatePath("/admin", "layout");
+  return { ok: lido.data.acao === "ativar" ? "Premium ativado." : "Premium desativado." };
 }

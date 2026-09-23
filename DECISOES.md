@@ -261,3 +261,19 @@ continuam como foram mostradas.
   com nome, e-mail e celular.
 - Os links "Perguntar ao Lessy" só preenchem a caixa: a pessoa decide enviar,
   para não gastar pergunta sem querer.
+
+## 2026-09-23 — Planos Gratuito e Premium (R$ 59,90/mês)
+
+- As regras moram em `src/lib/planos/regras.ts`: o que cada plano libera, o
+  preço e a tabela da tela de planos. As telas só perguntam `ehPremium` e
+  `mesesLiberados`.
+- Gratuito: Raio-X dos 3 meses mais recentes, 3 perguntas ao Lessy por mês,
+  missões. Premium: todos os meses, 50 perguntas, dashboard melhorado
+  (evolução mês a mês e comparação com o mês anterior), suporte; avisos do
+  DAS, comunidade e newsletter aparecem como "em breve".
+- Nenhum dado é apagado no gratuito: os meses mais antigos ficam salvos e
+  voltam a aparecer ao assinar.
+- Sem cobrança automática por enquanto: "Quero o Premium" vira um evento no
+  painel admin (no máximo 1 por pessoa a cada 7 dias) e a equipe ativa na
+  aba Usuários (30 dias, 1 ano ou sem prazo). Ativar e desativar ficam
+  registrados em `eventos`.

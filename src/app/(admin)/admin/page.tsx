@@ -6,6 +6,9 @@ const ACOES: Record<string, string> = {
   empresa_verificada: "Empresa verificada",
   verificacao_desfeita: "Verificação desfeita",
   pedido_especialista: "Pediu contato com especialista",
+  interesse_premium: "Quer o Premium",
+  premium_ativado: "Premium ativado",
+  premium_desativado: "Premium desativado",
 };
 
 function Numero({ rotulo, valor, nota, href }: { rotulo: string; valor: number; nota?: string; href?: string }) {
@@ -80,7 +83,7 @@ export default async function Resumo() {
                   <span className="text-muted-foreground">
                     {dataHora(e.criadoEm)}
                     {typeof e.detalhe?.por === "string" ? ` · ${e.detalhe.por}` : ""}
-                    {e.acao === "pedido_especialista"
+                    {e.acao === "pedido_especialista" || e.acao === "interesse_premium"
                       ? ` · ${[e.detalhe?.nome, e.detalhe?.email, e.detalhe?.telefone].filter((v) => typeof v === "string" && v).join(" · ")}`
                       : ""}
                   </span>

@@ -14,17 +14,28 @@ export type UsuarioAdmin = {
   criadoEm: string;
   ultimoAcesso: string | null;
   confirmado: boolean;
+  /** Premium ativo agora (e até quando; null = sem prazo). */
+  premium: { ate: string | null } | null;
 };
 
 /** Todos os usuários (até 1.000 — sobra para a fase de 500). */
 async function todosUsuarios(): Promise<UsuarioAdmin[]> {
   const db = clienteAdmin();
-  const [{ data, error }, perfis] = await Promise.all([
+  const hoje = new Date().toISOString().slice(0, 10);
+  const [{ data, error }, perfis, assinaturas] = await Promise.all([
     db.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     db.from("perfis").select("id, nome, telefone"),
+    db.from("assinaturas").select("perfil_id, plano, valido_ate").eq("status", "ativa").in("plano", ["pago", "assessoria"]),
   ]);
   if (error) throw new Error(`[admin] usuários: ${error.message}`);
   if (perfis.error) throw new Error(`[admin] perfis: ${perfis.error.message}`);
+  if (assinaturas.error) throw new Error(`[admin] assinaturas: ${assinaturas.error.message}`);
+
+  const premiumDe = new Map<string, { ate: string | null }>();
+  for (const a of assinaturas.data ?? []) {
+    if (a.valido_ate && a.valido_ate < hoje) continue;
+    premiumDe.set(a.perfil_id as string, { ate: (a.valido_ate as string | null) ?? null });
+  }
 
   const porId = new Map((perfis.data ?? []).map((p) => [p.id as string, p]));
   return data.users
@@ -36,6 +47,7 @@ async function todosUsuarios(): Promise<UsuarioAdmin[]> {
       criadoEm: u.created_at,
       ultimoAcesso: u.last_sign_in_at ?? null,
       confirmado: !!u.email_confirmed_at,
+      premium: premiumDe.get(u.id) ?? null,
     }))
     .sort((a, b) => b.criadoEm.localeCompare(a.criadoEm));
 }
@@ -274,5 +286,38 @@ async function registrarEvento(perfilId: string, empresaId: string, acao: string
     .from("eventos")
     .insert({ perfil_id: perfilId, empresa_id: empresaId, acao, detalhe });
   // A ação já aconteceu; falhar o registro não deve desfazê-la. Só avisa no log.
+  if (error) console.error("[admin] evento:", error.message);
+}
+
+// ---------------------------------------------------------------- planos
+
+/**
+ * Ativa o Premium na mão (enquanto não há cobrança automática).
+ * `dias` = null → sem prazo. Cancela antes qualquer assinatura ativa da pessoa,
+ * para existir só uma.
+ */
+export async function ativarPremium(perfilId: string, admin: { id: string; email: string }, dias: number | null) {
+  const db = clienteAdmin();
+  const cancelar = await db.from("assinaturas").update({ status: "cancelada" }).eq("perfil_id", perfilId).eq("status", "ativa");
+  if (cancelar.error) throw new Error(`[admin] cancelar anterior: ${cancelar.error.message}`);
+
+  const ate = dias ? new Date(Date.now() + dias * 864e5).toISOString().slice(0, 10) : null;
+  const { error } = await db.from("assinaturas").insert({ perfil_id: perfilId, plano: "pago", status: "ativa", valido_ate: ate });
+  if (error) throw new Error(`[admin] ativar premium: ${error.message}`);
+  await registrarEventoPerfil(admin.id, "premium_ativado", { por: admin.email, para: perfilId, ate });
+}
+
+export async function desativarPremium(perfilId: string, admin: { id: string; email: string }) {
+  const { error } = await clienteAdmin()
+    .from("assinaturas")
+    .update({ status: "cancelada" })
+    .eq("perfil_id", perfilId)
+    .eq("status", "ativa");
+  if (error) throw new Error(`[admin] desativar premium: ${error.message}`);
+  await registrarEventoPerfil(admin.id, "premium_desativado", { por: admin.email, para: perfilId });
+}
+
+async function registrarEventoPerfil(adminId: string, acao: string, detalhe: Record<string, unknown>) {
+  const { error } = await clienteAdmin().from("eventos").insert({ perfil_id: adminId, acao, detalhe });
   if (error) console.error("[admin] evento:", error.message);
 }
