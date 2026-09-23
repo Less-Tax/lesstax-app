@@ -102,3 +102,19 @@ body {
   outline-offset: 4px;
   border-radius: 8px;
 }
+
+/* Rolagem discreta: só a barra, sem trilho nem setas. */
+.rolagem-fina {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 45%, transparent) transparent;
+}
+.rolagem-fina::-webkit-scrollbar {
+  width: 6px;
+}
+.rolagem-fina::-webkit-scrollbar-track {
+  background: transparent;
+}
+.rolagem-fina::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted-foreground) 45%, transparent);
+  border-radius: 999px;
+}

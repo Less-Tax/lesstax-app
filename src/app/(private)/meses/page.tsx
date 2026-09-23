@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CheckCircle2, ChevronRight } from "lucide-react";
+import { ListaRolavel } from "@/components/navegacao/lista-rolavel";
 import { SeletorMes } from "@/components/navegacao/seletor-mes";
 import { chave, comparar, lerChave, mesAtual, somar, ultimoMesFechado } from "@/lib/competencia";
 import { empresasDoUsuario } from "@/lib/db/empresas";
@@ -59,7 +60,7 @@ export default async function Meses({
         </div>
       ) : null}
 
-      <div className="grid items-start gap-6 md:grid-cols-[1.3fr_1fr]">
+      <div className="grid items-start gap-6 md:grid-cols-[1.3fr_1fr] md:items-stretch">
         {/* O mês escolhido */}
         <section className="flex flex-col gap-5 rounded-2xl border border-border bg-card p-4 sm:p-5">
           <SeletorMes
@@ -77,14 +78,21 @@ export default async function Meses({
         </section>
 
         {/* Os meses já lançados */}
-        <section className="flex flex-col gap-3">
-          <h2 className="font-display text-lg font-bold">Lançados</h2>
+        {/* No computador, a altura acompanha o cartão do formulário (h-0 + min-h-full)
+            e a lista rola por dentro. No celular, a lista tem altura máxima. */}
+        <section className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card md:h-0 md:min-h-full">
+          <div className="flex items-baseline justify-between border-b border-border px-4 py-3 sm:px-5">
+            <h2 className="font-display text-lg font-bold">Lançados</h2>
+            {meses.length > 0 ? (
+              <span className="text-xs text-muted-foreground">
+                {meses.length} {meses.length === 1 ? "mês" : "meses"}
+              </span>
+            ) : null}
+          </div>
           {meses.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">
-              Nenhum mês ainda. Comece pelo mês que acabou de fechar.
-            </p>
+            <p className="p-4 text-sm text-muted-foreground">Nenhum mês ainda. Comece pelo mês que acabou de fechar.</p>
           ) : (
-            <ul className="flex flex-col divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
+            <ListaRolavel className="rolagem-fina flex max-h-96 flex-col divide-y divide-border overflow-y-auto overscroll-contain md:max-h-none md:flex-1">
               {[...meses].reverse().map((m) => {
                 const r = resultados.get(chave(m));
                 const escolhido = m.ano === atual.ano && m.mes === atual.mes;
@@ -98,8 +106,8 @@ export default async function Meses({
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold">{rotuloCompetencia(m.ano, m.mes)}</p>
                         <p className="text-xs text-muted-foreground">
-                          Entrou {reais(m.faturamento)}
-                          {r && !r.acimaDoTeto ? ` · imposto ${reais(r.imposto)}` : ""}
+                          <span className="whitespace-nowrap">Entrou {reais(m.faturamento)}</span>
+                          {r && !r.acimaDoTeto ? <> <span className="whitespace-nowrap">· imposto {reais(r.imposto)}</span></> : null}
                         </p>
                       </div>
                       {r ? (
@@ -116,7 +124,7 @@ export default async function Meses({
                   </li>
                 );
               })}
-            </ul>
+            </ListaRolavel>
           )}
         </section>
       </div>
