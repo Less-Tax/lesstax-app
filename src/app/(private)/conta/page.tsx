@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
-import { BadgeCheck, Building2, KeyRound, LogOut, UserRound } from "lucide-react";
+import Link from "next/link";
+import { BadgeCheck, Building2, KeyRound, LogOut, ShieldCheck, UserRound } from "lucide-react";
 import { FormEmpresa } from "@/components/empresa/form-empresa";
+import { ehAdmin } from "@/lib/admin/acesso";
 import { sair } from "@/lib/auth/acoes";
 import { usuarioAtual } from "@/lib/auth/usuario";
 import { empresasDoUsuario } from "@/lib/db/empresas";
@@ -48,9 +50,20 @@ export default async function Conta() {
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 px-4 py-6">
-      <div>
-        <h1 className="font-display text-2xl font-bold">Conta</h1>
-        <p className="text-sm text-muted-foreground">Os dados da empresa e os seus.</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold">Conta</h1>
+          <p className="text-sm text-muted-foreground">Os dados da empresa e os seus.</p>
+        </div>
+        {ehAdmin(usuario) ? (
+          <Link
+            href="/admin"
+            className="flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-semibold text-primary"
+          >
+            <ShieldCheck className="size-4" aria-hidden="true" />
+            Painel admin
+          </Link>
+        ) : null}
       </div>
 
       <Secao

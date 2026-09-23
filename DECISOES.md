@@ -217,3 +217,15 @@ continuam como foram mostradas.
   ganham uma simulação nova.
 - Trocar a senha pede a senha atual. E-mail não se troca pelo app por
   enquanto: depende do envio de e-mails (limite de 2 por hora sem SMTP).
+
+## 2026-09-23 — Painel admin
+
+- Quem entra: e-mail confirmado e listado em `ADMIN_EMAILS`. A lista fica no
+  servidor, fora do banco: quem conseguisse escrever no banco não vira admin.
+- Quem não é admin recebe 404 — o painel não aparece para ninguém.
+- O layout confere e cada Server Action confere de novo, porque uma ação pode
+  ser chamada direto, sem passar pela tela.
+- O painel lê com a chave de serviço (ignora a RLS), num módulo `server-only`
+  que só roda depois da checagem.
+- Verificar e desfazer ficam registrados em `eventos` (quem, quando, método).
+- Desfazer não devolve o CNPJ às cópias que o perderam.
