@@ -247,3 +247,17 @@ continuam como foram mostradas.
   grava nada nem consulta outras empresas.
 - A resposta é mostrada como texto puro (sem HTML), então não abre porta
   para XSS.
+
+## 2026-09-23 — Missões
+
+- A maioria das missões é calculada pelos dados (mês lançado, 12 meses
+  completos, pergunta ao Lessy). Só o que depende de a pessoa dizer "já fiz"
+  fica gravado em `missoes_feitas`.
+- A missão do mês volta todo mês; a da reforma só aparece enquanto a janela
+  de escolha está aberta.
+- Saúde tributária = % de missões feitas (0 a 100), com a mesma escala de cor
+  do MVP.
+- "Pedir contato" com especialista vira um evento que aparece no painel admin
+  com nome, e-mail e celular.
+- Os links "Perguntar ao Lessy" só preenchem a caixa: a pessoa decide enviar,
+  para não gastar pergunta sem querer.

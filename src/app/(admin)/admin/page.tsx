@@ -5,6 +5,7 @@ import { cnpj, dataHora } from "@/lib/admin/formato";
 const ACOES: Record<string, string> = {
   empresa_verificada: "Empresa verificada",
   verificacao_desfeita: "Verificação desfeita",
+  pedido_especialista: "Pediu contato com especialista",
 };
 
 function Numero({ rotulo, valor, nota, href }: { rotulo: string; valor: number; nota?: string; href?: string }) {
@@ -79,6 +80,9 @@ export default async function Resumo() {
                   <span className="text-muted-foreground">
                     {dataHora(e.criadoEm)}
                     {typeof e.detalhe?.por === "string" ? ` · ${e.detalhe.por}` : ""}
+                    {e.acao === "pedido_especialista"
+                      ? ` · ${[e.detalhe?.nome, e.detalhe?.email, e.detalhe?.telefone].filter((v) => typeof v === "string" && v).join(" · ")}`
+                      : ""}
                   </span>
                 </li>
               ))}

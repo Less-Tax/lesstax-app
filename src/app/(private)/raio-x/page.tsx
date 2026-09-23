@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarPlus } from "lucide-react";
+import { CalendarPlus, ChevronRight } from "lucide-react";
 import { Passos } from "@/components/boas-vindas/passos";
 import { SeletorMes } from "@/components/navegacao/seletor-mes";
 import { Cartao } from "@/components/raiox/cartao";
@@ -13,6 +13,9 @@ import { empresasDoUsuario } from "@/lib/db/empresas";
 import { simulacoesPorMes } from "@/lib/db/simulacoes";
 import { competencia, nomeDoMes, porcento } from "@/lib/formato";
 import { mesesQueFaltam, oportunidades, rotuloRegime } from "@/lib/tributario";
+import { Anel } from "@/components/missoes/anel";
+import { nivel, saude } from "@/lib/missoes/regras";
+import { missoesDa } from "@/lib/missoes/servidor";
 
 export const metadata = { title: "Raio-X — Less Tax" };
 
@@ -24,7 +27,9 @@ export default async function RaioX({ searchParams }: { searchParams: Promise<{ 
 
   // Uma simulação por mês lançado, do mais antigo para o mais novo.
   // O Raio-X mostra o que foi calculado e guardado — não recalcula.
-  const simulacoes = await simulacoesPorMes(empresa.id);
+  const [simulacoes, listaMissoes] = await Promise.all([simulacoesPorMes(empresa.id), missoesDa(empresa)]);
+  const pontosSaude = saude(listaMissoes);
+  const missoesPendentes = listaMissoes.filter((m) => !m.feita).length;
   if (simulacoes.length === 0) redirect("/meses");
 
   const parametros = await searchParams;
@@ -161,6 +166,25 @@ export default async function RaioX({ searchParams }: { searchParams: Promise<{ 
               negativoEmDestaque
             />
           </div>
+
+          <Link
+            href="/missoes"
+            className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 hover:border-primary"
+          >
+            <Anel pontos={pontosSaude} tamanho={56} />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-muted-foreground">Saúde tributária</p>
+              <p className="font-semibold">
+                {nivel(pontosSaude)}
+                <span className="font-normal text-muted-foreground">
+                  {missoesPendentes === 0
+                    ? " · todas as missões feitas"
+                    : ` · ${missoesPendentes} ${missoesPendentes === 1 ? "missão pendente" : "missões pendentes"}`}
+                </span>
+              </p>
+            </div>
+            <ChevronRight className="size-5 text-muted-foreground" aria-hidden="true" />
+          </Link>
 
           <Receita12
             rbt12={resultado.rbt12}

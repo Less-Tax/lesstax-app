@@ -10,7 +10,7 @@ import { Chat } from "./chat";
 
 export const metadata = { title: "Lessy — Less Tax" };
 
-export default async function Lessy({ searchParams }: { searchParams: Promise<{ conversa?: string; nova?: string }> }) {
+export default async function Lessy({ searchParams }: { searchParams: Promise<{ conversa?: string; nova?: string; pergunta?: string }> }) {
   const parametros = await searchParams;
   const usuario = await usuarioAtual();
   if (!usuario) redirect("/entrar");
@@ -35,6 +35,7 @@ export default async function Lessy({ searchParams }: { searchParams: Promise<{ 
         key={conversa?.id ?? "nova"}
         conversaInicial={conversa}
         historico={historico}
+        perguntaInicial={(parametros.pergunta ?? "").slice(0, 500)}
         restantesInicial={Math.max(0, limite - usadas)}
         limite={limite}
         gratuito={plano === "gratuito"}

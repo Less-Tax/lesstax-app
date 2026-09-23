@@ -174,6 +174,22 @@ end;
 $$;
 reset role;
 
+-- 12. Missões: o Bruno não marca missão na empresa da Ana.
+set role authenticated;
+set request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+do $$
+begin
+  begin
+    insert into public.missoes_feitas (empresa_id, perfil_id, missao)
+    select id, '22222222-2222-2222-2222-222222222222', 'anexo' from alvo;
+    insert into resultados values (12, 'FALHOU 12. Bruno marcou missão na empresa da Ana');
+  exception when insufficient_privilege then
+    insert into resultados values (12, 'OK     12. missões só na própria empresa');
+  end;
+end;
+$$;
+reset role;
+
 -- ------------------------------------------------------------------ limpeza
 reset role;
 reset request.jwt.claims;
@@ -186,5 +202,5 @@ delete from public.leads    where nome = 'Lead de teste';
 delete from public.perfis   where id in ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222');
 delete from auth.users      where id in ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222');
 
--- O resultado: as onze linhas precisam começar com OK.
+-- O resultado: as doze linhas precisam começar com OK.
 select resultado from resultados order by ordem;

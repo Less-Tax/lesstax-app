@@ -47,6 +47,7 @@ const dataCurta = (iso: string) =>
 export function Chat({
   conversaInicial,
   historico,
+  perguntaInicial = "",
   restantesInicial,
   limite,
   gratuito,
@@ -55,6 +56,8 @@ export function Chat({
 }: {
   conversaInicial: { id: string; mensagens: Mensagem[] } | null;
   historico: { id: string; titulo: string; criadaEm: string }[];
+  /** Pergunta sugerida por outra tela (ex.: Missões). Fica na caixa; a pessoa decide enviar. */
+  perguntaInicial?: string;
   restantesInicial: number;
   limite: number;
   gratuito: boolean;
@@ -64,7 +67,7 @@ export function Chat({
   const [conversaId, setConversaId] = useState<string | null>(conversaInicial?.id ?? null);
   const [mensagens, setMensagens] = useState<Mensagem[]>(conversaInicial?.mensagens ?? []);
   const [restantes, setRestantes] = useState(restantesInicial);
-  const [texto, setTexto] = useState("");
+  const [texto, setTexto] = useState(perguntaInicial);
   const [erro, setErro] = useState("");
   const [pensando, iniciar] = useTransition();
   const fim = useRef<HTMLDivElement>(null);
