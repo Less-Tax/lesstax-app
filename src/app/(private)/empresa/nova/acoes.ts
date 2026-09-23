@@ -66,7 +66,14 @@ export async function salvarEmpresa(_anterior: EstadoEmpresa, dados: FormData): 
   }
 
   const criada = await criarEmpresa(usuario.id, lido.data, receita);
-  if (!criada.ok) return { erro: "Não consegui salvar agora. Tente de novo em instantes." };
+  if (!criada.ok) {
+    return {
+      erro:
+        criada.motivo === "cnpj_verificado"
+          ? "Este CNPJ já foi confirmado por outra conta. Se você faz parte da empresa, peça um convite ao responsável — ou apague o CNPJ e continue sem ele."
+          : "Não consegui salvar agora. Tente de novo em instantes.",
+    };
+  }
 
   redirect("/inicio");
 }

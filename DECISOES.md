@@ -113,3 +113,18 @@ preenchem as mesmas colunas.
 
 Efeito colateral bom: a mensagem "CNPJ já cadastrado", que revelava quem é
 cliente, deixou de existir.
+
+## 2026-09-22 — Cópias perdem o CNPJ quando a original é verificada
+
+`verificar_empresa()` remove o CNPJ (e os dados da Receita ligados a ele) das
+outras contas que tinham cadastrado o mesmo número, e marca `cnpj_removido_em`
+para o app avisar essas contas. Os números que elas lançaram continuam salvos.
+Depois da verificação, um gatilho impede qualquer outra empresa de usar esse
+CNPJ, no cadastro ou numa edição.
+
+Nunca juntamos a cópia na empresa verificada: o impostor ganharia acesso aos
+dados do dono. Entrar numa empresa verificada só por convite.
+
+Preço consciente: quem tenta cadastrar um CNPJ verificado descobre que ele é
+cliente da Less Tax. Aceito no beta, porque sem essa mensagem o sócio legítimo
+não saberia que precisa pedir convite.

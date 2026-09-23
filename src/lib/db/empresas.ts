@@ -17,6 +17,8 @@ export type Empresa = {
   uf: string | null;
   /** Preenchido só pela equipe, depois de confirmar que a conta é da empresa. */
   verificada_em: string | null;
+  /** Preenchido quando o CNPJ foi confirmado por outra conta e removido desta. */
+  cnpj_removido_em: string | null;
 };
 
 /** Empresas que o usuário logado enxerga. Quem filtra é a RLS, não este código. */
@@ -24,18 +26,20 @@ export async function empresasDoUsuario(): Promise<Empresa[]> {
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase
     .from("empresas")
-    .select("id, cnpj, nome, razao_social, porte, regime, atividade, clientes, funcionarios, municipio, uf, verificada_em")
+    .select("id, cnpj, nome, razao_social, porte, regime, atividade, clientes, funcionarios, municipio, uf, verificada_em, cnpj_removido_em")
     .order("criado_em", { ascending: true });
   if (error) throw error;
   return data ?? [];
 }
 
-export type ResultadoCriacao = { ok: true; id: string } | { ok: false };
+export type ResultadoCriacao =
+  | { ok: true; id: string }
+  | { ok: false; motivo: "cnpj_verificado" | "falha" };
 
 /**
  * Cria a empresa, sempre como NÃO verificada. O gatilho do banco torna quem
  * criou o dono dela. O mesmo CNPJ pode existir em várias contas enquanto
- * nenhuma for verificada — só a verificação tem CNPJ único.
+ * nenhuma for verificada. Depois que uma é verificada, o CNPJ é só dela.
  *
  * O id é gerado AQUI, e o insert não pede os dados de volta (.select()).
  * Motivo: no momento do insert a pessoa ainda não é membro — o vínculo é
@@ -70,6 +74,8 @@ export async function criarEmpresa(
   });
 
   if (!error) return { ok: true, id };
+  // O banco recusa CNPJ que já foi verificado por outra conta.
+  if (error.hint === "cnpj_ja_verificado") return { ok: false, motivo: "cnpj_verificado" };
   console.error("[empresas] criar:", error.message);
-  return { ok: false };
+  return { ok: false, motivo: "falha" };
 }

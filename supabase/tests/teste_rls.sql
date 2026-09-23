@@ -1,5 +1,5 @@
 -- Teste da RLS: um usuário não pode ver nem tocar na empresa do outro.
--- Rode inteiro no SQL Editor do lesstax-dev. As sete linhas saem juntas no fim.
+-- Rode inteiro no SQL Editor do lesstax-dev. As nove linhas saem juntas no fim.
 -- O próprio script apaga o que criou.
 
 create temp table if not exists resultados (ordem int, resultado text);
@@ -116,6 +116,33 @@ select 6, case when count(*) = 2
                else 'FALHOU  6. encontrei ' || count(*) || ' cadastros do CNPJ de teste' end
 from public.empresas where cnpj = '99999999000191';
 
+-- 8. A equipe verifica a empresa da Ana: a cópia do Bruno perde o CNPJ.
+select public.verificar_empresa(
+  (select id from public.empresas where nome = 'Original da Ana'), 'teste automático', 'manual');
+
+insert into resultados
+select 8, case when copia.cnpj is null and copia.cnpj_removido_em is not null
+                and original.cnpj = '99999999000191' and original.verificada_em is not null
+               then 'OK      8. ao verificar, a cópia perde o CNPJ e a original fica com ele'
+               else 'FALHOU  8. a verificação não limpou a cópia' end
+from public.empresas copia, public.empresas original
+where copia.nome = 'Cópia do Bruno' and original.nome = 'Original da Ana';
+
+-- 9. Depois disso, o Bruno não consegue usar o CNPJ de novo.
+set role authenticated;
+set request.jwt.claims = '{"sub":"22222222-2222-2222-2222-222222222222","role":"authenticated"}';
+do $$
+begin
+  begin
+    update public.empresas set cnpj = '99999999000191' where nome = 'Cópia do Bruno';
+    insert into resultados values (9, 'FALHOU  9. o CNPJ verificado voltou para a cópia');
+  exception when raise_exception then
+    insert into resultados values (9, 'OK      9. CNPJ verificado não pode ser usado por outra conta');
+  end;
+end;
+$$;
+reset role;
+
 -- ------------------------------------------------------------------ limpeza
 reset role;
 reset request.jwt.claims;
@@ -127,5 +154,5 @@ delete from public.leads    where nome = 'Lead de teste';
 delete from public.perfis   where id in ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222');
 delete from auth.users      where id in ('11111111-1111-1111-1111-111111111111','22222222-2222-2222-2222-222222222222');
 
--- O resultado: as sete linhas precisam começar com OK.
+-- O resultado: as nove linhas precisam começar com OK.
 select resultado from resultados order by ordem;

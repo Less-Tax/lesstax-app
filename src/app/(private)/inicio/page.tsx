@@ -26,6 +26,16 @@ export default async function Inicio() {
         </p>
       </div>
 
+      {empresa.cnpj_removido_em && !empresa.cnpj ? (
+        <div role="status" className="flex flex-col gap-1 rounded-xl border-l-4 border-amber-500 bg-amber-500/10 p-3.5 text-sm">
+          <p className="font-semibold">O CNPJ foi removido desta empresa</p>
+          <p className="text-black/70 dark:text-white/70">
+            Outra conta confirmou ser a dona desse CNPJ. Os números que você lançou continuam
+            salvos. Se você faz parte da empresa, peça ao responsável para convidar você.
+          </p>
+        </div>
+      ) : null}
+
       {empresa.verificada_em ? (
         <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-emerald-600/10 px-3 py-1 text-sm font-semibold text-emerald-700 dark:text-emerald-400">
           ✓ Empresa verificada
