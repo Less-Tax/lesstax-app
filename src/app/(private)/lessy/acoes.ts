@@ -23,6 +23,7 @@ export type RespostaLessy =
   | { ok: false; erro: string; restantes?: number };
 
 const FALHA = "O Lessy não conseguiu responder agora. Tente de novo em instantes — a pergunta não foi descontada.";
+const FALHA_TEMPORARIA = "O Lessy está com instabilidade no momento. Tente de novo mais tarde — a pergunta não foi descontada.";
 
 export async function perguntar(conversaIdPedido: string | null, texto: string): Promise<RespostaLessy> {
   const usuario = await usuarioAtual();
@@ -51,7 +52,10 @@ export async function perguntar(conversaIdPedido: string | null, texto: string):
       };
     }
     if (doDia >= limiteDiario()) {
-      return { ok: false, restantes: limite - usadas, erro: "O Lessy está com muita procura hoje. Tente de novo amanhã." };
+      // O usuário não fica sabendo do teto diário: vê a mesma mensagem de uma
+      // falha comum. Aqui no log fica registrado o motivo real.
+      console.warn(`[lessy] teto diário atingido (${doDia}/${limiteDiario()})`);
+      return { ok: false, restantes: limite - usadas, erro: FALHA_TEMPORARIA };
     }
 
     // 2. A conversa, se veio, tem de ser desta pessoa e desta empresa.

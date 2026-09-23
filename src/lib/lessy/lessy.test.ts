@@ -62,7 +62,7 @@ describe("limites da Lessy", () => {
     expect(limiteMensal("pago", {})).toBe(100);
     expect(limiteMensal("gratuito", { LESSY_MAX_GRATUITO: "5" })).toBe(5);
     expect(limiteMensal("pago", { LESSY_MAX_MES_PAGO: "abc" })).toBe(100);
-    expect(limiteDiario({ LESSY_MAX_DIA: "-1" })).toBe(400);
+    expect(limiteDiario({ LESSY_MAX_DIA: "-1" })).toBe(50);
   });
 
   it("mês e dia contam no horário de Brasília", () => {

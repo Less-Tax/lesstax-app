@@ -14,7 +14,7 @@ export function limiteMensal(plano: Plano, env: Record<string, string | undefine
 
 /** Teto geral de perguntas por dia, somando todo mundo: protege o orçamento da API. */
 export function limiteDiario(env: Record<string, string | undefined> = process.env) {
-  return numero(env.LESSY_MAX_DIA, 400);
+  return numero(env.LESSY_MAX_DIA, 50);
 }
 
 // Brasília não tem mais horário de verão: o fuso é sempre -03:00.

@@ -234,7 +234,7 @@ continuam como foram mostradas.
 
 - Limite por pessoa e por mês (horário de Brasília): 3 no gratuito, 100 no
   pago (`LESSY_MAX_GRATUITO`, `LESSY_MAX_MES_PAGO`), mais um teto geral por dia
-  (`LESSY_MAX_DIA`) para proteger o orçamento da API.
+  (`LESSY_MAX_DIA`, 50 por dia no começo) para proteger o orçamento da API.
 - A pergunta só conta depois de respondida: pergunta e resposta são gravadas
   juntas. Falha da API não gasta pergunta.
 - Conversas e mensagens: pelo app, só leitura. Quem grava é o servidor, com a
